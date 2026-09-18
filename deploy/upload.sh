@@ -12,6 +12,19 @@ ssh_port="${PRODUCTION_SSH_PORT:-22}"
 [[ "$ssh_port" =~ ^[0-9]+$ ]] && (( ssh_port > 0 && ssh_port <= 65535 ))
 [[ "$PRODUCTION_DEPLOY_PATH" =~ ^/[A-Za-z0-9_/-]+$ && "$PRODUCTION_DEPLOY_PATH" != / && "$PRODUCTION_DEPLOY_PATH" != *..* ]]
 [[ "$GITHUB_SHA" =~ ^[a-f0-9]{40}$ && "$GITHUB_RUN_ID" =~ ^[0-9]+$ && "$GITHUB_RUN_ATTEMPT" =~ ^[0-9]+$ ]]
+environment="$(sed -n 's/^DEPLOY_ENVIRONMENT=//p' .deploy/deploy.env)"
+network="$(sed -n 's/^DEPLOY_NETWORK=//p' .deploy/deploy.env)"
+case "$environment" in
+  testing)
+    [[ "$PRODUCTION_DEPLOY_PATH" == /opt/pulperia/testing/truco-panel && "$network" == pulperia-testing-web ]]
+    grep -Fxq 'DEPLOY_PROJECT=pulperia-panel-testing' .deploy/deploy.env
+    ;;
+  production)
+    [[ "$PRODUCTION_DEPLOY_PATH" != */testing/* && "$network" == pulperia-web ]]
+    grep -Fxq 'DEPLOY_PROJECT=pulperia-panel' .deploy/deploy.env
+    ;;
+  *) echo 'Invalid deployment environment'; exit 1 ;;
+esac
 remote="$PRODUCTION_DEPLOY_PATH/releases/$GITHUB_SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
 target="$PRODUCTION_SSH_USERNAME@$PRODUCTION_SSH_HOST"
 ssh_dir="$(mktemp -d)"

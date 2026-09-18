@@ -1,3 +1,5 @@
+> Producción (`main`) y testing (`development`): ver [guía de ambientes](TESTING.md). Esta guía describe la configuración de producción.
+
 # CI/CD del panel — GitHub Actions y VPS
 
 Mismo esquema que `truco-front`: **PR a main valida; push a main valida y despliega**. También permite Run workflow, con despliegue solo al seleccionar `main`.

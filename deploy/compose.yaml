@@ -1,4 +1,4 @@
-name: pulperia-panel
+name: ${DEPLOY_PROJECT:-pulperia-panel}
 services:
   web:
     image: ${DEPLOY_IMAGE:?Missing DEPLOY_IMAGE}
@@ -9,4 +9,4 @@ services:
 networks:
   web:
     external: true
-    name: pulperia-web
+    name: ${DEPLOY_NETWORK:-pulperia-web}
