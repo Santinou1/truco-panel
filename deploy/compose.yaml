@@ -1,0 +1,12 @@
+name: pulperia-panel
+services:
+  web:
+    image: ${DEPLOY_IMAGE:?Missing DEPLOY_IMAGE}
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${PANEL_HTTP_PORT:-8081}:80"
+    networks: [web]
+networks:
+  web:
+    external: true
+    name: pulperia-web

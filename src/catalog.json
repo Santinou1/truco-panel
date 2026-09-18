@@ -1,0 +1,135 @@
+{
+  "avatars": [
+    {
+      "id": "gaucho",
+      "label": "Gaucho",
+      "image": "avatares/gaucho.png"
+    },
+    {
+      "id": "tano",
+      "label": "Tano",
+      "image": "avatares/tano.png"
+    },
+    {
+      "id": "viejo-del-bar",
+      "label": "Viejo del bar",
+      "image": "avatares/viejo-del-bar.png"
+    },
+    {
+      "id": "pibe",
+      "label": "Pibe",
+      "image": "avatares/pibe.png"
+    },
+    {
+      "id": "piba",
+      "label": "Piba",
+      "image": "avatares/piba.png"
+    },
+    {
+      "id": "paisano",
+      "label": "Paisano",
+      "image": "avatares/paisano.png"
+    },
+    {
+      "id": "paisana",
+      "label": "Paisana",
+      "image": "avatares/paisana.png"
+    },
+    {
+      "id": "javier-milei",
+      "label": "Javier Milei",
+      "image": "avatares/javier-milei.png"
+    },
+    {
+      "id": "cristina-kirchner",
+      "label": "Cristina Kirchner",
+      "image": "avatares/cristina-kirchner.png"
+    }
+  ],
+  "frames": [
+    {
+      "id": "cuero",
+      "label": "cuero",
+      "image": "marcos/cuero.png"
+    },
+    {
+      "id": "madera",
+      "label": "madera",
+      "image": "marcos/madera.png"
+    },
+    {
+      "id": "plata",
+      "label": "plata",
+      "image": "marcos/plata.png"
+    },
+    {
+      "id": "oro",
+      "label": "oro",
+      "image": "marcos/oro.png"
+    }
+  ],
+  "tables": [
+    {
+      "id": "clasica",
+      "label": "clasica",
+      "image": "mesas/vertical/clasica.png"
+    },
+    {
+      "id": "bar",
+      "label": "bar",
+      "image": "mesas/vertical/bar.png"
+    },
+    {
+      "id": "pulperia",
+      "label": "pulperia",
+      "image": "mesas/vertical/pulperia.png"
+    },
+    {
+      "id": "campo",
+      "label": "campo",
+      "image": "mesas/vertical/campo.png"
+    },
+    {
+      "id": "asado",
+      "label": "asado",
+      "image": "mesas/vertical/asado.png"
+    },
+    {
+      "id": "cancha",
+      "label": "cancha",
+      "image": "mesas/vertical/cancha.png"
+    }
+  ],
+  "cardBacks": [
+    {
+      "id": "clasico",
+      "label": "clasico",
+      "image": "cartas/reversos/clasico.png"
+    },
+    {
+      "id": "fileteado",
+      "label": "fileteado",
+      "image": "cartas/reversos/fileteado.png"
+    },
+    {
+      "id": "cuero",
+      "label": "cuero",
+      "image": "cartas/reversos/cuero.png"
+    },
+    {
+      "id": "patrio",
+      "label": "patrio",
+      "image": "cartas/reversos/patrio.png"
+    },
+    {
+      "id": "mate",
+      "label": "mate",
+      "image": "cartas/reversos/mate.png"
+    },
+    {
+      "id": "asado",
+      "label": "asado",
+      "image": "cartas/reversos/asado.png"
+    }
+  ]
+}

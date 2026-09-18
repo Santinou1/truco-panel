@@ -1,0 +1,68 @@
+name: Auto deploy La Pulpería panel to VPS
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: deploy-panel-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      VITE_GAME_URL: ${{ vars.VITE_GAME_URL || 'https://lapulperia.cloud' }}
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Test and build
+        run: |
+          npm test
+          npm run build
+          bash -n deploy/upload.sh deploy/apply.sh
+      - name: Build exact deployment image
+        run: docker build --pull --build-arg VITE_GAME_URL="$VITE_GAME_URL" -t "pulperia-panel:$GITHUB_SHA" .
+      - name: Verify Docker and browser
+        run: |
+          npx --no-install playwright install --with-deps chromium
+          node deploy/smoke.mjs
+      - name: Prepare deployment
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        env:
+          PANEL_HTTP_PORT: ${{ secrets.PANEL_HTTP_PORT }}
+        run: node deploy/config.mjs
+      - name: Deploy image using verified SSH
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        env:
+          PRODUCTION_SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
+          PRODUCTION_SSH_USERNAME: ${{ secrets.PRODUCTION_SSH_USERNAME }}
+          PRODUCTION_SSH_PRIVATE_KEY: ${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}
+          PRODUCTION_SSH_KNOWN_HOSTS: ${{ secrets.PRODUCTION_SSH_KNOWN_HOSTS }}
+          PRODUCTION_SSH_PORT: ${{ secrets.PRODUCTION_SSH_PORT }}
+          PRODUCTION_DEPLOY_PATH: ${{ secrets.PRODUCTION_DEPLOY_PATH }}
+        run: |
+          docker save "pulperia-panel:$GITHUB_SHA" | gzip > .deploy/image.tar.gz
+          bash deploy/upload.sh
+      - name: Remove private temporary files
+        if: always()
+        run: rm -rf -- .deploy
