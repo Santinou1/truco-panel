@@ -19,6 +19,8 @@ async function waitFor(url) {
 }
 
 const sha = process.env.GITHUB_SHA || '0'.repeat(40);
+const testing = process.env.DEPLOY_ENVIRONMENT === 'testing';
+const image = `pulperia-panel${testing ? '-testing' : ''}:${sha}`;
 const id = `pulperia-panel-smoke-${process.pid}-${Date.now()}`;
 const runtime = resolve('.runtime');
 await mkdir(runtime, { recursive: true });
@@ -26,14 +28,14 @@ const dir = await mkdtemp(join(runtime, 'panel-smoke-'));
 const containers = [];
 let networkCreated = false, browser;
 try {
-  await writeFile(join(dir, 'deploy.env'), deploymentFiles({ GITHUB_SHA: sha })['deploy.env']);
+  await writeFile(join(dir, 'deploy.env'), deploymentFiles({ GITHUB_SHA: sha, DEPLOY_ENVIRONMENT: process.env.DEPLOY_ENVIRONMENT })['deploy.env']);
   await copyFile('deploy/compose.yaml', join(dir, 'compose.yaml'));
   const compose = JSON.parse(docker('compose', '--env-file', join(dir, 'deploy.env'), '-f', join(dir, 'compose.yaml'), 'config', '--format', 'json'));
-  assert.equal(compose.name, 'pulperia-panel');
+  assert.equal(compose.name, testing ? 'pulperia-panel-testing' : 'pulperia-panel');
   assert.equal(compose.services.web.ports[0].host_ip, '127.0.0.1');
-  assert.equal(String(compose.services.web.ports[0].published), '8081');
-  assert.equal(compose.services.web.image, 'pulperia-panel:' + sha);
-  assert.equal(compose.networks.web.name, 'pulperia-web');
+  assert.equal(String(compose.services.web.ports[0].published), testing ? '8083' : '8081');
+  assert.equal(compose.services.web.image, image);
+  assert.equal(compose.networks.web.name, testing ? 'pulperia-testing-web' : 'pulperia-web');
   assert.equal(compose.networks.web.external, true);
 
   docker('network', 'create', id); networkCreated = true;
@@ -42,7 +44,7 @@ try {
     '--mount', `type=bind,source=${resolve('deploy/proxy-fixture.mjs')},target=/fixture.mjs,readonly`,
     'node:22-bookworm-slim', 'node', '/fixture.mjs');
   const web = id + '-web'; containers.push(web);
-  docker('run', '-d', '--name', web, '--network', id, '-p', '127.0.0.1::80', 'pulperia-panel:' + sha);
+  docker('run', '-d', '--name', web, '--network', id, '-p', '127.0.0.1::80', image);
   const base = 'http://' + docker('port', web, '80').split('\n')[0];
   await waitFor(base + '/healthz');
   docker('exec', web, 'nginx', '-t');
