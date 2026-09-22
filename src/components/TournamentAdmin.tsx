@@ -13,6 +13,7 @@ import {
 import "./tournament-admin.css";
 type Config = {
   capacity: 8 | 16;
+  botCount: number;
   name: string;
   description: string;
   startMode: "scheduled" | "when_full";
@@ -24,6 +25,7 @@ type Config = {
 };
 const blank: Config = {
   capacity: 16,
+  botCount: 0,
   name: "",
   description: "",
   startMode: "when_full",
@@ -91,12 +93,32 @@ function Editor({
             <select
               value={c.capacity}
               onChange={(e) =>
-                set({ ...c, capacity: Number(e.target.value) as 8 | 16 })
+                set({
+                  ...c,
+                  capacity: Number(e.target.value) as 8 | 16,
+                  botCount: Math.min(c.botCount, Number(e.target.value)),
+                })
               }
             >
               <option value={8}>8 jugadores</option>
               <option value={16}>16 jugadores</option>
             </select>
+          </label>
+          <label>
+            Bots de simulación
+            <input
+              type="number"
+              min={0}
+              max={c.capacity}
+              step={1}
+              required
+              aria-describedby="bot-help"
+              value={c.botCount}
+              onChange={(e) => {
+                const botCount = Number(e.target.value);
+                set({ ...c, botCount, prize: botCount > 0 ? 0 : c.prize });
+              }}
+            />
           </label>
           <label>
             Inicio
@@ -129,6 +151,7 @@ function Editor({
               max={100000000}
               step={1}
               required
+              disabled={c.botCount > 0}
               value={c.prize}
               onChange={(e) => set({ ...c, prize: Number(e.target.value) })}
             />
@@ -168,11 +191,18 @@ function Editor({
             </select>
           </label>
         </div>
-        <p>
-          {c.capacity} jugadores · Entrada gratuita · Eliminación directa · 70%
-          al campeón y 30% al finalista. El premio se paga manualmente por fuera
-          del sistema.
+        <p id="bot-help">
+          {c.botCount > 0
+            ? `Simulación: ${c.botCount} bots y ${c.capacity - c.botCount} lugares para personas. Los bots entran al publicar y juegan automáticamente. Sin premios ni cambios de ranking.`
+            : "Dejá 0 para un torneo normal. Agregá bots para probarlo con menos personas, o completá todos los cupos para una simulación automática."}
         </p>
+        {c.botCount === 0 && (
+          <p>
+            {c.capacity} jugadores · Entrada gratuita · Eliminación directa ·
+            70% al campeón y 30% al finalista. El premio se paga manualmente por
+            fuera del sistema.
+          </p>
+        )}
         {c.startMode === "scheduled" && (
           <p>
             Si no confirman presencia los {c.capacity} jugadores a la hora
@@ -284,6 +314,7 @@ export function TournamentAdmin({
   }
   const config = (d: TournamentDetail): Config => ({
     capacity: d.capacity,
+    botCount: d.botCount,
     name: d.name,
     description: d.description,
     startMode: d.startMode,
@@ -374,7 +405,11 @@ export function TournamentAdmin({
                     {tournamentStatus[t.status]} · {t.enrolled}/{t.capacity}
                   </span>
                   <small>{tournamentDate(t.startsAt, t.capacity)}</small>
-                  <span>{pesos(t.prize)} en premios</span>
+                  <span>
+                    {t.simulation
+                      ? `Simulación · ${t.botCount} bots`
+                      : `${pesos(t.prize)} en premios`}
+                  </span>
                 </button>
               ))}
             </div>
@@ -390,8 +425,14 @@ export function TournamentAdmin({
               {detail.target} tantos · {detail.flor ? "Con flor" : "Sin flor"}
             </p>
             <p>
-              <strong>{pesos(detail.prize)}</strong> · Entrada gratis · Pago
-              manual
+              {detail.simulation ? (
+                `Simulación · ${detail.botCount} bots y ${detail.capacity - detail.botCount} personas · Sin premios ni ranking`
+              ) : (
+                <>
+                  <strong>{pesos(detail.prize)}</strong> · Entrada gratis · Pago
+                  manual
+                </>
+              )}
             </p>
             <p>
               {detail.entries.length}/{detail.capacity} inscriptos ·{" "}
@@ -438,7 +479,7 @@ export function TournamentAdmin({
                       void mutate(
                         `/admin/tournaments/${detail.id}/publish`,
                         {},
-                        "Torneo publicado. Ya admite inscripciones.",
+                        "Torneo publicado.",
                       )
                     }
                   >

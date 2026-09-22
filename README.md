@@ -66,3 +66,5 @@ Configurar `ADMIN_PANEL_URL` con el origen HTTPS del panel y agregarlo a `ALLOWE
 ## Torneos
 
 La sección Torneos permite crear, editar y duplicar borradores; publicar torneos programados o al completar 8 o 16 cupos; reprogramar pospuestos; cancelar; resolver cruces sin ganador y registrar pagos manuales con referencia. Cuenta superadministradora verificada requerida en la API. Entradas gratuitas y reparto 70/30; no transfiere dinero. El juego usa `/torneos` en truco-front. Prueba conjunta: `npm run test:tournaments:browser` desde truco-back; DB y puertos separados.
+
+Simulaciones: el panel permite configurar de 0 a 8/16 bots. Se incorporan al publicar y juegan automáticamente; los cupos restantes son para personas. Se identifican como simulación, sin premios ni ELO. Guía técnica y ejemplos en `../truco-back/TOURNAMENTS.md`.

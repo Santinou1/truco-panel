@@ -19,11 +19,14 @@ export interface TournamentSummary {
   enrolled: number;
   confirmed: number;
   capacity: 8 | 16;
+  botCount: number;
+  simulation: boolean;
 }
 export interface TournamentDetail extends TournamentSummary {
   entries: {
     userId: string;
     displayName: string;
+    isBot: boolean;
     avatarId: string | null;
     status: string;
   }[];
