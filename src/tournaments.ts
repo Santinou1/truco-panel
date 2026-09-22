@@ -18,7 +18,7 @@ export interface TournamentSummary {
   banner: "ancho" | "envido";
   enrolled: number;
   confirmed: number;
-  capacity: 16;
+  capacity: 8 | 16;
 }
 export interface TournamentDetail extends TournamentSummary {
   entries: {
@@ -62,13 +62,13 @@ export const pesos = (amount: number) =>
     currency: "ARS",
     maximumFractionDigits: 0,
   }).format(amount);
-export const tournamentDate = (value: string | null) =>
+export const tournamentDate = (value: string | null, capacity: 8 | 16 = 16) =>
   value
     ? new Date(value).toLocaleString("es-AR", {
         dateStyle: "medium",
         timeStyle: "short",
       })
-    : "Empieza al completar 16 cupos";
+    : `Empieza al completar ${capacity} cupos`;
 // Persist only command data, never credentials. An uncertain response retries the same receipt.
 export function pendingTournamentIntent(userId: string) {
   const raw = sessionStorage.getItem(`tournament-intent:${userId}`);

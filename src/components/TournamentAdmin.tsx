@@ -12,6 +12,7 @@ import {
 } from "../tournaments";
 import "./tournament-admin.css";
 type Config = {
+  capacity: 8 | 16;
   name: string;
   description: string;
   startMode: "scheduled" | "when_full";
@@ -22,6 +23,7 @@ type Config = {
   banner: "ancho" | "envido";
 };
 const blank: Config = {
+  capacity: 16,
   name: "",
   description: "",
   startMode: "when_full",
@@ -85,6 +87,18 @@ function Editor({
         </label>
         <div className="tournament-form-grid">
           <label>
+            Participantes
+            <select
+              value={c.capacity}
+              onChange={(e) =>
+                set({ ...c, capacity: Number(e.target.value) as 8 | 16 })
+              }
+            >
+              <option value={8}>8 jugadores</option>
+              <option value={16}>16 jugadores</option>
+            </select>
+          </label>
+          <label>
             Inicio
             <select
               value={c.startMode}
@@ -92,7 +106,7 @@ function Editor({
                 set({ ...c, startMode: e.target.value as Config["startMode"] })
               }
             >
-              <option value="when_full">Al completar 16 cupos</option>
+              <option value="when_full">Al completar {c.capacity} cupos</option>
               <option value="scheduled">Fecha y hora programadas</option>
             </select>
           </label>
@@ -155,10 +169,17 @@ function Editor({
           </label>
         </div>
         <p>
-          16 jugadores · Entrada gratuita · Eliminación directa · 70% al campeón
-          y 30% al finalista. El premio se paga manualmente por fuera del
-          sistema.
+          {c.capacity} jugadores · Entrada gratuita · Eliminación directa · 70%
+          al campeón y 30% al finalista. El premio se paga manualmente por fuera
+          del sistema.
         </p>
+        {c.startMode === "scheduled" && (
+          <p>
+            Si no confirman presencia los {c.capacity} jugadores a la hora
+            prevista, queda pospuesto: se liberan las mesas y se conservan las
+            inscripciones. Podés reprogramarlo o cancelarlo desde acá.
+          </p>
+        )}
         <div className="tournament-actions">
           <button className="primary" type="submit">
             Guardar borrador
@@ -262,6 +283,7 @@ export function TournamentAdmin({
     }
   }
   const config = (d: TournamentDetail): Config => ({
+    capacity: d.capacity,
     name: d.name,
     description: d.description,
     startMode: d.startMode,
@@ -349,9 +371,9 @@ export function TournamentAdmin({
                 >
                   <strong>{t.name}</strong>
                   <span>
-                    {tournamentStatus[t.status]} · {t.enrolled}/16
+                    {tournamentStatus[t.status]} · {t.enrolled}/{t.capacity}
                   </span>
-                  <small>{tournamentDate(t.startsAt)}</small>
+                  <small>{tournamentDate(t.startsAt, t.capacity)}</small>
                   <span>{pesos(t.prize)} en premios</span>
                 </button>
               ))}
@@ -364,15 +386,15 @@ export function TournamentAdmin({
             <h2>{detail.name}</h2>
             <p>{detail.description}</p>
             <p>
-              {tournamentDate(detail.startsAt)} · {detail.target} tantos ·{" "}
-              {detail.flor ? "Con flor" : "Sin flor"}
+              {tournamentDate(detail.startsAt, detail.capacity)} ·{" "}
+              {detail.target} tantos · {detail.flor ? "Con flor" : "Sin flor"}
             </p>
             <p>
               <strong>{pesos(detail.prize)}</strong> · Entrada gratis · Pago
               manual
             </p>
             <p>
-              {detail.entries.length}/16 inscriptos ·{" "}
+              {detail.entries.length}/{detail.capacity} inscriptos ·{" "}
               {
                 detail.entries.filter((e) =>
                   ["checked_in", "playing"].includes(e.status),
