@@ -1,3 +1,4 @@
+import { TournamentAdmin } from "./components/TournamentAdmin";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, ApiError, message, navigate } from "./api";
 import { Access } from "./components/Access";
@@ -6,6 +7,7 @@ import { asset } from "./catalog";
 import type { User } from "./types";
 
 export function App() {
+  const [section, setSection] = useState<"catalog" | "tournaments">("catalog");
   const [user, setUser] = useState<User | null>(null);
   const [booting, setBooting] = useState(true);
   const [bootError, setBootError] = useState(false);
@@ -100,13 +102,20 @@ export function App() {
           <span className="eyebrow">LA CASA</span>
           <nav aria-label="Administración">
             {user.role === "super_admin" && (
-              <a
-                className="nav-active"
-                href="#main-content"
-                aria-current="page"
-              >
-                <span aria-hidden="true">▦</span> Catálogo y precios
-              </a>
+              <>
+                <button
+                  aria-current={section === "catalog" ? "page" : undefined}
+                  onClick={() => setSection("catalog")}
+                >
+                  ▦ Catálogo y precios
+                </button>
+                <button
+                  aria-current={section === "tournaments" ? "page" : undefined}
+                  onClick={() => setSection("tournaments")}
+                >
+                  ♠ Torneos
+                </button>
+              </>
             )}
             <a href={gameUrl} target="_blank" rel="noreferrer">
               <span aria-hidden="true">↗</span> Abrir el juego
@@ -182,7 +191,15 @@ export function App() {
           ) : !user ? (
             <Access onSuccess={accept} run={run} busy={busy} google={google} />
           ) : user.role === "super_admin" ? (
-            <Admin key={user.id} onDenied={denied} />
+            section === "tournaments" ? (
+              <TournamentAdmin
+                key={user.id}
+                userId={user.id}
+                onDenied={denied}
+              />
+            ) : (
+              <Admin key={user.id} onDenied={denied} />
+            )
           ) : (
             <main className="page">
               <section className="panel empty-state">

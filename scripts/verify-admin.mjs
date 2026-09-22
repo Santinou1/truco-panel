@@ -50,7 +50,7 @@ export async function verifyAdmin(browser, base) {
     await expect(page.getByLabel("Email", { exact: true })).toBeVisible();
     await expect(page).toHaveURL(base + "/");
     await expect(
-      page.getByRole("link", { name: "Catálogo y precios", exact: false }),
+      page.getByRole("button", { name: "Catálogo y precios", exact: false }),
     ).toHaveCount(0);
     await page.goto(base + "/login");
     await expect(page.getByLabel("Email", { exact: true })).toBeVisible();
@@ -74,9 +74,10 @@ export async function verifyAdmin(browser, base) {
         ),
     );
     await expect(
-      page.getByRole("link", { name: "Catálogo y precios", exact: false }),
+      page.getByRole("button", { name: "Catálogo y precios", exact: false }),
     ).toBeVisible();
     initialPrice = Number(await input().inputValue());
+    const nextPrice=initialPrice===375?376:375;
     report.checks.push(
       "Ingreso común /, rutas antiguas redirigen a raíz, OTP de soporte y redirección por rol; 20 diseños del catálogo",
     );
@@ -94,24 +95,24 @@ export async function verifyAdmin(browser, base) {
     const beforeInventory = await (
       await context.request.get(base + "/api/users/me/inventory")
     ).json();
-    await input().fill("375");
+    await input().fill(String(nextPrice));
     await page.getByLabel("Categoría", { exact: true }).selectOption("avatars");
     await page.getByLabel("Categoría", { exact: true }).selectOption("frames");
-    await expect(input()).toHaveValue("375");
+    await expect(input()).toHaveValue(String(nextPrice));
     await page.getByLabel("Buscar diseño", { exact: true }).fill("oro");
     await expect(page.locator(".admin-card:visible")).toHaveCount(1);
     await save().click();
     await expect(
-      page.getByText("Guardado: 375 fichas.", { exact: true }),
+      page.getByText(`Guardado: ${nextPrice} fichas.`, { exact: true }),
     ).toBeVisible();
     await page.reload();
-    await expect(input()).toHaveValue("375");
+    await expect(input()).toHaveValue(String(nextPrice));
     const publicCatalog = await (
       await context.request.get(base + "/api/catalog")
     ).json();
     assert.equal(
       publicCatalog.frames.find((item) => item.id === "oro").price,
-      375,
+      nextPrice,
     );
     report.checks.push(
       "Borrador conservado al filtrar, guardar y recargar; precio reflejado en catálogo público compartido con el juego",
@@ -149,10 +150,10 @@ export async function verifyAdmin(browser, base) {
     await expect(
       page.getByText("Guardado: 444 fichas.", { exact: true }),
     ).toBeVisible();
-    await input().fill("375");
+    await input().fill(String(nextPrice));
     await save().click();
     await expect(
-      page.getByText("Guardado: 375 fichas.", { exact: true }),
+      page.getByText(`Guardado: ${nextPrice} fichas.`, { exact: true }),
     ).toBeVisible();
     report.checks.push(
       "Validación, error de red simulado sin éxito falso ni perder borrador, reintento real",
@@ -178,7 +179,7 @@ export async function verifyAdmin(browser, base) {
         "sin overflow " + width,
       );
       await expect(
-        page.getByRole("link", { name: "Catálogo y precios", exact: false }),
+        page.getByRole("button", { name: "Catálogo y precios", exact: false }),
       ).toBeInViewport();
     }
     await page.emulateMedia({ reducedMotion: "reduce" });
@@ -258,7 +259,7 @@ export async function verifyAdmin(browser, base) {
     ).toBeVisible();
     await expect(page.locator(".admin-card")).toHaveCount(0);
     await expect(
-      page.getByRole("link", { name: "Catálogo y precios", exact: false }),
+      page.getByRole("button", { name: "Catálogo y precios", exact: false }),
     ).toHaveCount(0);
     assert.equal(
       (
@@ -299,7 +300,7 @@ export async function verifyAdmin(browser, base) {
       ).toBeVisible();
       assert.equal(adminCalls, 0);
       await expect(
-        outsider.getByRole("link", {
+        outsider.getByRole("button", {
           name: "Catálogo y precios",
           exact: false,
         }),

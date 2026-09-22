@@ -62,3 +62,7 @@ CI/CD listo en [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml): P
 `npm run build` genera `dist/` autónomo. Servirlo con fallback de rutas a `index.html` y proxy `/api` al mismo backend del juego, conservando cookies, `Origin` y cabeceras. El proxy de Vite solo funciona en desarrollo; `npm run preview` sirve para revisar el build, no reemplaza ese proxy.
 
 Configurar `ADMIN_PANEL_URL` con el origen HTTPS del panel y agregarlo a `ALLOWED_ORIGINS`. Registrar `ADMIN_PANEL_URL/api/auth/google/panel/callback` en Google. El backend mantiene su `FRONTEND_URL` y callback del juego. En el despliegue del backend por GitHub Actions, definir el secret opcional `ADMIN_PANEL_URL` y actualizar `ALLOWED_ORIGINS`. No requiere migraciones de base de datos adicionales.
+
+## Torneos
+
+La sección Torneos permite crear, editar y duplicar borradores; publicar torneos programados o al completar 16 cupos; reprogramar pospuestos; cancelar; resolver cruces sin ganador y registrar pagos manuales con referencia. Cuenta superadministradora verificada requerida en la API. Entradas gratuitas y reparto 70/30; no transfiere dinero. El juego usa `/torneos` en truco-front. Prueba conjunta: `npm run test:tournaments:browser` desde truco-back; DB y puertos separados.
