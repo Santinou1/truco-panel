@@ -68,3 +68,11 @@ Configurar `ADMIN_PANEL_URL` con el origen HTTPS del panel y agregarlo a `ALLOWE
 La sección Torneos permite crear, editar y duplicar borradores; publicar torneos programados o al completar 8 o 16 cupos; reprogramar pospuestos; cancelar; resolver cruces sin ganador y registrar pagos manuales con referencia. Cuenta superadministradora verificada requerida en la API. Entradas gratuitas y reparto 70/30; no transfiere dinero. El juego usa `/torneos` en truco-front. Prueba conjunta: `npm run test:tournaments:browser` desde truco-back; DB y puertos separados.
 
 Simulaciones: el panel permite configurar de 0 a 8/16 bots. Se incorporan al publicar y juegan automáticamente; los cupos restantes son para personas. Se identifican como simulación, sin premios ni ELO. Guía técnica y ejemplos en `../truco-back/TOURNAMENTS.md`.
+
+## Integración de testing — 2026-11-08
+
+El juego en `development` incorpora **Guardar usuario** y alertas compactas cerrables. Esta entrega conserva el acceso, los permisos y la edición de precios del panel; comparte la API vigente con el juego.
+
+El [informe y las nueve capturas del juego](https://github.com/Santinou1/truco-front/releases/tag/testing-2026-11-08-guardar-usuario-alertas) se adjuntan fuera de Git. Destino del panel: [testingpanel.lapulperia.cloud](https://testingpanel.lapulperia.cloud), publicado por el workflow de `development` después del backend.
+
+Verificación local de esta integración: `npm test` (4 pruebas), `npm run build` y `npm run test:browser` aprobados. La suite de navegador usa API/PostgreSQL reales y OTP simulado; comprueba borradores, reintentos, permisos, sesión y pantallas desde 320 px.
