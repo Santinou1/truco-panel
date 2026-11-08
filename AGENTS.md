@@ -1,5 +1,6 @@
 # La Pulpería — Administración
 
+- Mapa general de arquitectura, reglas de producto, entorno y migración de PC: [`../truco-back/AGENTS.md`](../truco-back/AGENTS.md). Leerlo junto con estas reglas específicas del panel.
 - React, TypeScript y Vite. Panel independiente de truco-front, API compartida de truco-back.
 - SDD por feature: spec.md y criterios antes de implementar; mantener plan.md, tasks.md y verification.md en docs/specs.
 - Specs y evidencia permanecen locales e ignoradas por Git. Versionar código, tests, assets, fuentes, licencias y guías técnicas.
