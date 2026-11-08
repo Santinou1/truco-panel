@@ -76,3 +76,14 @@ El juego en `development` incorpora **Guardar usuario** y alertas compactas cerr
 El [informe y las nueve capturas del juego](https://github.com/Santinou1/truco-front/releases/tag/testing-2026-11-08-guardar-usuario-alertas) se adjuntan fuera de Git. Destino del panel: [testingpanel.lapulperia.cloud](https://testingpanel.lapulperia.cloud), publicado por el workflow de `development` después del backend.
 
 Verificación local de esta integración: `npm test` (4 pruebas), `npm run build` y `npm run test:browser` aprobados. La suite de navegador usa API/PostgreSQL reales y OTP simulado; comprueba borradores, reintentos, permisos, sesión y pantallas desde 320 px.
+
+
+## Simulación con bots — 2026-11-08
+
+Entrar como superadministrador y abrir **Simulación con bots** en el menú. **Activar simulación** abre las mesas de práctica del juego; **Desactivar simulación** cierra todas las pruebas en curso. La elección se guarda en la API y se conserva al reiniciar. Saldo, ELO y partidas normales permanecen independientes. Si el entorno no permite simulación, se informa y el botón queda deshabilitado.
+
+La pantalla consulta el estado real, espera la respuesta al guardar y conserva el estado ante fallos. **Actualizar estado** resuelve una versión vieja antes de volver a cambiarla. API: `GET/POST /api/admin/simulation`, con sesión y permiso vigente por operación.
+
+`npm run test:browser` cubre el control, permisos, error/reintento, persistencia al recargar y móvil 320 px. Para comprobar además el juego real, instalar `../truco-front`, preparar sus assets y ejecutar `npm run test:browser -- verify-simulation`: mantiene API 3004/panel 5177 y añade juego 5180, con base `pulperia_panel_browser_test` y OTP simulado. No crea cuentas ni cambia configuración en ambientes públicos.
+
+[Informe y capturas del control de simulación](https://github.com/Santinou1/truco-panel/releases/tag/testing-2026-11-08-control-simulacion).

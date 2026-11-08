@@ -1,4 +1,5 @@
 import { TournamentAdmin } from "./components/TournamentAdmin";
+import { SimulationAdmin } from "./components/SimulationAdmin";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, ApiError, message, navigate } from "./api";
 import { Access } from "./components/Access";
@@ -7,7 +8,9 @@ import { asset } from "./catalog";
 import type { User } from "./types";
 
 export function App() {
-  const [section, setSection] = useState<"catalog" | "tournaments">("catalog");
+  const [section, setSection] = useState<
+    "catalog" | "tournaments" | "simulation"
+  >("catalog");
   const [user, setUser] = useState<User | null>(null);
   const [booting, setBooting] = useState(true);
   const [bootError, setBootError] = useState(false);
@@ -115,6 +118,12 @@ export function App() {
                 >
                   ♠ Torneos
                 </button>
+                <button
+                  aria-current={section === "simulation" ? "page" : undefined}
+                  onClick={() => setSection("simulation")}
+                >
+                  Simulación con bots
+                </button>
               </>
             )}
             <a href={gameUrl} target="_blank" rel="noreferrer">
@@ -191,7 +200,9 @@ export function App() {
           ) : !user ? (
             <Access onSuccess={accept} run={run} busy={busy} google={google} />
           ) : user.role === "super_admin" ? (
-            section === "tournaments" ? (
+            section === "simulation" ? (
+              <SimulationAdmin key={user.id} onDenied={denied} />
+            ) : section === "tournaments" ? (
               <TournamentAdmin
                 key={user.id}
                 userId={user.id}

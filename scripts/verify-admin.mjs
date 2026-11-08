@@ -1,3 +1,4 @@
+import { verifySimulationControl } from "./verify-simulation-control.mjs";
 import { chromium, expect } from "@playwright/test";
 import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
@@ -76,8 +77,9 @@ export async function verifyAdmin(browser, base) {
     await expect(
       page.getByRole("button", { name: "Catálogo y precios", exact: false }),
     ).toBeVisible();
+    report.simulation = await verifySimulationControl(browser, page, base);
     initialPrice = Number(await input().inputValue());
-    const nextPrice=initialPrice===375?376:375;
+    const nextPrice = initialPrice === 375 ? 376 : 375;
     report.checks.push(
       "Ingreso común /, rutas antiguas redirigen a raíz, OTP de soporte y redirección por rol; 20 diseños del catálogo",
     );
@@ -268,6 +270,10 @@ export async function verifyAdmin(browser, base) {
           data: { category: "frames", assetId: "oro", price: 999 },
         })
       ).status(),
+      403,
+    );
+    assert.equal(
+      (await context.request.get(base + "/api/admin/simulation")).status(),
       403,
     );
     await page.reload();

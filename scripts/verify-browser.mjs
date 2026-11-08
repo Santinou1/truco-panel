@@ -1,3 +1,4 @@
+import { resolve } from "node:path";
 import { createServer } from "vite";
 import { chromium, expect } from "@playwright/test";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
@@ -17,7 +18,8 @@ execFileSync(
   { stdio: "inherit" },
 );
 const app = await startBrowserApi();
-let vite, browser;
+let vite, browser, game;
+const withGame = process.argv[2] === "verify-simulation";
 try {
   vite = await createServer({
     server: {
@@ -31,6 +33,28 @@ try {
     },
   });
   await vite.listen();
+  if (withGame) {
+    game = await createServer({
+      root: resolve("../truco-front"),
+      configFile: resolve("../truco-front/vite.config.ts"),
+      server: {
+        host: "127.0.0.1",
+        port: 5180,
+        strictPort: true,
+        hmr: false,
+        proxy: {
+          "/api": { target: "http://127.0.0.1:3004", changeOrigin: true },
+          "/socket.io": {
+            target: "http://127.0.0.1:3004",
+            changeOrigin: true,
+            ws: true,
+          },
+        },
+      },
+    });
+    await game.listen();
+    process.env.SIMULATION_GAME_URL = "http://127.0.0.1:5180";
+  }
   browser = await chromium.launch();
   const page = await browser.newPage();
   await page.goto("http://127.0.0.1:5177");
@@ -113,6 +137,7 @@ try {
   );
 } finally {
   await browser?.close();
+  await game?.close();
   await vite?.close();
   await app.close();
 }
