@@ -62,3 +62,28 @@ CI/CD listo en [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml): P
 `npm run build` genera `dist/` autónomo. Servirlo con fallback de rutas a `index.html` y proxy `/api` al mismo backend del juego, conservando cookies, `Origin` y cabeceras. El proxy de Vite solo funciona en desarrollo; `npm run preview` sirve para revisar el build, no reemplaza ese proxy.
 
 Configurar `ADMIN_PANEL_URL` con el origen HTTPS del panel y agregarlo a `ALLOWED_ORIGINS`. Registrar `ADMIN_PANEL_URL/api/auth/google/panel/callback` en Google. El backend mantiene su `FRONTEND_URL` y callback del juego. En el despliegue del backend por GitHub Actions, definir el secret opcional `ADMIN_PANEL_URL` y actualizar `ALLOWED_ORIGINS`. No requiere migraciones de base de datos adicionales.
+
+## Torneos
+
+La sección Torneos permite crear, editar y duplicar borradores; publicar torneos programados o al completar 8 o 16 cupos; reprogramar pospuestos; cancelar; resolver cruces sin ganador y registrar pagos manuales con referencia. Cuenta superadministradora verificada requerida en la API. Entradas gratuitas y reparto 70/30; no transfiere dinero. El juego usa `/torneos` en truco-front. Prueba conjunta: `npm run test:tournaments:browser` desde truco-back; DB y puertos separados.
+
+Simulaciones: el panel permite configurar de 0 a 8/16 bots. Se incorporan al publicar y juegan automáticamente; los cupos restantes son para personas. Se identifican como simulación, sin premios ni ELO. Guía técnica y ejemplos en `../truco-back/TOURNAMENTS.md`.
+
+## Integración de testing — 2026-11-08
+
+El juego en `development` incorpora **Guardar usuario** y alertas compactas cerrables. Esta entrega conserva el acceso, los permisos y la edición de precios del panel; comparte la API vigente con el juego.
+
+El [informe y las nueve capturas del juego](https://github.com/Santinou1/truco-front/releases/tag/testing-2026-11-08-guardar-usuario-alertas) se adjuntan fuera de Git. Destino del panel: [testingpanel.lapulperia.cloud](https://testingpanel.lapulperia.cloud), publicado por el workflow de `development` después del backend.
+
+Verificación local de esta integración: `npm test` (4 pruebas), `npm run build` y `npm run test:browser` aprobados. La suite de navegador usa API/PostgreSQL reales y OTP simulado; comprueba borradores, reintentos, permisos, sesión y pantallas desde 320 px.
+
+
+## Simulación con bots — 2026-11-08
+
+Entrar como superadministrador y abrir **Simulación con bots** en el menú. **Activar simulación** abre las mesas de práctica del juego; **Desactivar simulación** cierra todas las pruebas en curso. La elección se guarda en la API y se conserva al reiniciar. Saldo, ELO y partidas normales permanecen independientes. Si el entorno no permite simulación, se informa y el botón queda deshabilitado.
+
+La pantalla consulta el estado real, espera la respuesta al guardar y conserva el estado ante fallos. **Actualizar estado** resuelve una versión vieja antes de volver a cambiarla. API: `GET/POST /api/admin/simulation`, con sesión y permiso vigente por operación.
+
+`npm run test:browser` cubre el control, permisos, error/reintento, persistencia al recargar y móvil 320 px. Para comprobar además el juego real, instalar `../truco-front`, preparar sus assets y ejecutar `npm run test:browser -- verify-simulation`: mantiene API 3004/panel 5177 y añade juego 5180, con base `pulperia_panel_browser_test` y OTP simulado. No crea cuentas ni cambia configuración en ambientes públicos.
+
+[Informe y capturas del control de simulación](https://github.com/Santinou1/truco-panel/releases/tag/testing-2026-11-08-control-simulacion).
