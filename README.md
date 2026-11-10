@@ -69,6 +69,12 @@ La sección Torneos permite crear, editar y duplicar borradores; publicar torneo
 
 Simulaciones: el panel permite configurar de 0 a 8/16 bots. Se incorporan al publicar y juegan automáticamente; los cupos restantes son para personas. Se identifican como simulación, sin premios ni ELO. Guía técnica y ejemplos en `../truco-back/TOURNAMENTS.md`.
 
+## Ranking diario
+
+La sección **Ranking diario** abre el calendario de jornadas. Elegí una fecha para consultar el ganador o líder, los totales y la clasificación. **Ver partidas** muestra el historial del jugador en esa jornada. Se puede buscar por nombre, correo del rival o ID de partida y filtrar por resultado.
+
+El detalle muestra los equipos, el marcador y las horas de inicio y final en Argentina. La API comprueba el rol de superadministrador vigente en cada consulta. La prueba conjunta `npm run test:ranking:browser` se ejecuta desde `truco-back`.
+
 ## Integración de testing — 2026-11-08
 
 El juego en `development` incorpora **Guardar usuario** y alertas compactas cerrables. Esta entrega conserva el acceso, los permisos y la edición de precios del panel; comparte la API vigente con el juego.

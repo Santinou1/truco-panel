@@ -1,5 +1,6 @@
 import { TournamentAdmin } from "./components/TournamentAdmin";
 import { SimulationAdmin } from "./components/SimulationAdmin";
+import { DailyRankingAdmin } from "./components/DailyRankingAdmin";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, ApiError, message, navigate } from "./api";
 import { Access } from "./components/Access";
@@ -9,7 +10,7 @@ import type { User } from "./types";
 
 export function App() {
   const [section, setSection] = useState<
-    "catalog" | "tournaments" | "simulation"
+    "catalog" | "tournaments" | "simulation" | "ranking"
   >("catalog");
   const [user, setUser] = useState<User | null>(null);
   const [booting, setBooting] = useState(true);
@@ -119,6 +120,12 @@ export function App() {
                   ♠ Torneos
                 </button>
                 <button
+                  aria-current={section === "ranking" ? "page" : undefined}
+                  onClick={() => setSection("ranking")}
+                >
+                  ▤ Ranking diario
+                </button>
+                <button
                   aria-current={section === "simulation" ? "page" : undefined}
                   onClick={() => setSection("simulation")}
                 >
@@ -202,6 +209,8 @@ export function App() {
           ) : user.role === "super_admin" ? (
             section === "simulation" ? (
               <SimulationAdmin key={user.id} onDenied={denied} />
+            ) : section === "ranking" ? (
+              <DailyRankingAdmin key={user.id} onDenied={denied} />
             ) : section === "tournaments" ? (
               <TournamentAdmin
                 key={user.id}
