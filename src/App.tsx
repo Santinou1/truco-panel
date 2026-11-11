@@ -1,5 +1,4 @@
 import { TournamentAdmin } from "./components/TournamentAdmin";
-import { SimulationAdmin } from "./components/SimulationAdmin";
 import { DailyRankingAdmin } from "./components/DailyRankingAdmin";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, ApiError, message, navigate } from "./api";
@@ -10,7 +9,7 @@ import type { User } from "./types";
 
 export function App() {
   const [section, setSection] = useState<
-    "catalog" | "tournaments" | "simulation" | "ranking"
+    "catalog" | "tournaments" | "ranking"
   >("catalog");
   const [user, setUser] = useState<User | null>(null);
   const [booting, setBooting] = useState(true);
@@ -125,12 +124,6 @@ export function App() {
                 >
                   ▤ Ranking diario
                 </button>
-                <button
-                  aria-current={section === "simulation" ? "page" : undefined}
-                  onClick={() => setSection("simulation")}
-                >
-                  Simulación con bots
-                </button>
               </>
             )}
             <a href={gameUrl} target="_blank" rel="noreferrer">
@@ -207,9 +200,7 @@ export function App() {
           ) : !user ? (
             <Access onSuccess={accept} run={run} busy={busy} google={google} />
           ) : user.role === "super_admin" ? (
-            section === "simulation" ? (
-              <SimulationAdmin key={user.id} onDenied={denied} />
-            ) : section === "ranking" ? (
+            section === "ranking" ? (
               <DailyRankingAdmin key={user.id} onDenied={denied} />
             ) : section === "tournaments" ? (
               <TournamentAdmin
