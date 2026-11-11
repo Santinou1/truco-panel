@@ -102,10 +102,6 @@ export async function startBrowserApi(port = 3004) {
   fixture = emailFixture();
   const { Test } = require("@nestjs/testing");
   const { AppModule } = require("./dist/app.module.js");
-  const {
-    SIMULATION_CONFIG,
-    simulationConfig,
-  } = require("./dist/modules/table-simulation/simulation.config.js");
   const { CONFIG, readConfig } = require("./dist/config.js");
   const { configureApp } = require("./dist/bootstrap.js");
   const { EmailProvider } = require("./dist/modules/email/email.provider.js");
@@ -116,24 +112,17 @@ export async function startBrowserApi(port = 3004) {
     PORT: String(port),
     ADMIN_PANEL_URL: "http://127.0.0.1:5177",
     APP_URL: `http://localhost:${port}`,
-    ALLOWED_ORIGINS: `http://localhost:${port},http://localhost:5177,http://127.0.0.1:5177,http://127.0.0.1:5180`,
+    ALLOWED_ORIGINS: `http://localhost:${port},http://localhost:5177,http://127.0.0.1:5177`,
   });
   const module = await Test.createTestingModule({ imports: [AppModule] })
     .overrideProvider(CONFIG)
     .useValue(config)
-    .overrideProvider(SIMULATION_CONFIG)
-    .useValue({ ...simulationConfig({}), enabled: true, botDelayMs: 1000 })
     .overrideProvider(EmailProvider)
     .useValue(fixture.provider)
     .compile();
   const app = configureApp(
     module.createNestApplication({ logger: false, rawBody: true }),
   );
-  await app
-    .get(Database)
-    .query(
-      "UPDATE gaming.table_simulation_settings SET enabled=false,version=0,updated_at=now()",
-    );
   await app.listen(port, "127.0.0.1");
   testPool = app.get(Database);
   testApp = app;
