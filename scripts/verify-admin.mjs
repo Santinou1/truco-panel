@@ -76,6 +76,24 @@ export async function verifyAdmin(browser, base) {
     await expect(
       page.getByRole("button", { name: "Catálogo y precios", exact: false }),
     ).toBeVisible();
+    const activity = () => page.getByRole("button", { name: "Actividad del salón", exact: true });
+    await activity().click();
+    const readActivity = async () => (await context.request.get(base + "/api/admin/lobby-activity")).json();
+    const initialActivity = await readActivity();
+    assert.equal(initialActivity.available, true);
+    const toggleName = (enabled) => enabled ? "Desactivar actividad" : "Activar actividad";
+    const toggle = (enabled) => page.getByRole("button", { name: toggleName(enabled), exact: true });
+    await toggle(initialActivity.enabled).click();
+    await expect(toggle(!initialActivity.enabled)).toBeVisible();
+    assert.equal((await readActivity()).enabled, !initialActivity.enabled);
+    await page.reload();
+    await activity().click();
+    await expect(toggle(!initialActivity.enabled)).toBeVisible();
+    await page.screenshot({ path: dir + "/actividad-del-salon.png" });
+    await toggle(!initialActivity.enabled).click();
+    await expect(toggle(initialActivity.enabled)).toBeVisible();
+    await page.getByRole("button", { name: "Catálogo y precios", exact: false }).click();
+    report.checks.push("El interruptor del salón guarda ambos estados en la API y conserva el cambio al recargar");
     initialPrice = Number(await input().inputValue());
     const nextPrice = initialPrice === 375 ? 376 : 375;
     report.checks.push(
