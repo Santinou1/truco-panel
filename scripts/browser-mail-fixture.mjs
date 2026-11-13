@@ -24,6 +24,27 @@ export async function createTestReferralOwner() {
   return { id, summary: () => testApp.get(ReferralsService).summary(id) };
 }
 
+export async function createTestReferralLinks(code) {
+  assertTestMail();
+  const { UsersService } = require("./dist/modules/users/users.service.js");
+  const { ReferralsService } = require("./dist/modules/referrals/referrals.service.js");
+  const users = testApp.get(UsersService);
+  const referrals = testApp.get(ReferralsService);
+  for (const [name, alias, games] of [
+    ["Amiga por empezar", "por-empezar", 0],
+    ["Amigo en camino", "en-camino", 4],
+    ["Amiga premiada", "premiada", 10],
+  ]) {
+    const sub = randomUUID();
+    const id = await users.google({ sub, name, email: alias + "@example.test" });
+    await referrals.link(id, code);
+    await testPool.query(
+      "UPDATE identity.referrals SET games=$2::smallint, rewarded_at=CASE WHEN $2::smallint=10 THEN now() END WHERE referred_id=$1",
+      [id, games],
+    );
+  }
+}
+
 // Only this isolated browser-test database is used; never creates a production admin.
 export async function prepareTestAdmin(password) {
   assertTestMail();
