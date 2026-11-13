@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { api, ApiError, message } from "../api";
+import { ReferralTracking } from "./ReferralTracking";
 import "./referrals-admin.css";
 
 type Account = { id: string; displayName: string; email: string; code: string | null };
@@ -16,6 +17,7 @@ export function ReferralsAdmin({ onDenied }: { onDenied: (status: 401 | 403) => 
   const [options, setOptions] = useState<AvatarOption[]>([]);
   const [selection, setSelection] = useState<Record<string, string>>({});
   const [refresh, setRefresh] = useState(0);
+  const [trackingRevision, setTrackingRevision] = useState(0);
   const [searching, setSearching] = useState(false);
   const [saving, setSaving] = useState("");
   const [accountError, setAccountError] = useState("");
@@ -58,6 +60,7 @@ export function ReferralsAdmin({ onDenied }: { onDenied: (status: 401 | 403) => 
       const {code} = await api<{code:string}>("/admin/referrals/code",{userId});
       setAccounts(current=>current && {...current,items:current.items.map(account=>account.id===userId?{...account,code}:account)});
       setNotice(`Código ${code} asignado a la cuenta.`);
+      setTrackingRevision(value => value + 1);
     } catch(cause) { failure(cause,setAccountError); }
     finally { setSaving(""); }
   };
@@ -72,6 +75,7 @@ export function ReferralsAdmin({ onDenied }: { onDenied: (status: 401 | 403) => 
       await api("/admin/referrals/avatars/deliver",{userId:request.ownerId,avatarId});
       setNotice(`Avatar acreditado a ${request.displayName}.`);
       setRefresh(n=>n+1);
+      setTrackingRevision(value => value + 1);
     } catch(cause) { failure(cause,setRequestsError); }
     finally { setSaving(""); }
   };
@@ -86,9 +90,9 @@ export function ReferralsAdmin({ onDenied }: { onDenied: (status: 401 | 403) => 
       <header>
         <span className="eyebrow">COMUNIDAD</span>
         <h1>Referidos</h1>
-        <p>Asigná códigos personales y entregá los avatares ganados por invitación.</p>
       </header>
       {notice && <p className="panel referrals-admin-notice" role="status">{notice}</p>}
+      <ReferralTracking revision={trackingRevision} onFailure={failure} />
       <section className="panel referrals-admin-panel" aria-labelledby="referral-code-admin">
         <h2 id="referral-code-admin">Asignar un código</h2>
         <p>Buscá una cuenta verificada. El código de cuatro dígitos queda asociado a la cuenta.</p>

@@ -4,6 +4,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import {
   prepareTestAdmin,
   createTestReferralOwner,
+  createTestReferralLinks,
   revokeTestAdmin,
   testOtp,
 } from "./browser-mail-fixture.mjs";
@@ -117,8 +118,33 @@ export async function verifyAdmin(browser, base) {
     const savedCode = await referralOwner.summary();
     assert.match(savedCode.ownCode, /^[0-9]{4}$/);
     await expect(page.getByText("Código: " + savedCode.ownCode)).toBeVisible();
+    await createTestReferralLinks(savedCode.ownCode);
+    const tracking = page.getByRole("region", { name: "Seguimiento de referidos" });
+    await tracking.getByLabel("Buscar en seguimiento").fill(savedCode.ownCode);
+    await tracking.getByLabel("Estado", { exact: true }).selectOption("with_links");
+    await tracking.getByRole("button", { name: "Aplicar filtros" }).click();
+    await expect(tracking.getByText("3 vinculados", { exact: true })).toBeVisible();
+    await expect(tracking.getByText("1 con premio", { exact: true })).toBeVisible();
+    await tracking.getByRole("button", { name: "Ver referidos del código " + savedCode.ownCode }).click();
+    const notStarted = tracking.getByRole("row").filter({ hasText: "Amiga por empezar" });
+    const inProgress = tracking.getByRole("row").filter({ hasText: "Amigo en camino" });
+    const rewarded = tracking.getByRole("row").filter({ hasText: "Amiga premiada" });
+    await expect(notStarted).toContainText("Faltan 10 partidas");
+    await expect(inProgress).toContainText("Faltan 6 partidas");
+    await expect(inProgress).toContainText("Invitador de prueba");
+    await expect(rewarded).toContainText("Acreditado");
+    await tracking.screenshot({ path: dir + "/seguimiento-referidos.png" });
+    await tracking.getByLabel("Estado", { exact: true }).selectOption("rewarded");
+    await tracking.getByRole("button", { name: "Aplicar filtros" }).click();
+    await expect(rewarded).toBeVisible();
+    await expect(inProgress).toHaveCount(0);
+    await page.setViewportSize({ width: 320, height: 850 });
+    assert.ok(await tracking.evaluate(element =>
+      element.getBoundingClientRect().right <= document.documentElement.clientWidth + 1));
+    await expect(tracking.getByRole("region", { name: "Usuarios referidos" })).toBeVisible();
+    await page.setViewportSize({ width: 1440, height: 1000 });
     await page.getByRole("button", { name: "Catálogo y precios", exact: false }).click();
-    report.checks.push("Referidos: búsqueda por cuenta exacta y código de cuatro dígitos asignado desde el panel");
+    report.checks.push("Referidos: asignación, búsqueda, dueño del código, progreso, filtro de premio y tabla móvil");
     assert.equal(
       (await context.request.get(base + "/api/admin/panel")).status(),
       404,

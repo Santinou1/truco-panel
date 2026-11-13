@@ -9,3 +9,77 @@
 .referrals-admin-row {display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-top:1px solid #bd9b5e50;padding:12px 0;overflow-wrap:anywhere}
 .referrals-admin-row > div:first-child {display:grid;gap:4px}
 .referrals-admin-code {color:#f5d88d;font-variant-numeric:tabular-nums;letter-spacing:.08em}
+
+.referrals-tracking-totals {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+  gap: 10px;
+  margin: 16px 0;
+}
+.referrals-tracking-totals > div {
+  padding: 12px 14px;
+  border: 1px solid #bd9b5e50;
+  border-radius: 8px;
+  background: #132a22;
+}
+.referrals-tracking-totals dd {
+  margin: 0;
+  font-size: 26px;
+  color: #f5d88d;
+  font-variant-numeric: tabular-nums;
+}
+.referrals-tracking-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 10px;
+}
+.referrals-tracking-filters label {
+  display: grid;
+  gap: 4px;
+}
+.referrals-tracking-filters label:first-child {
+  flex: 1 1 245px;
+}
+.referrals-tracking-filters input,
+.referrals-tracking-filters select {
+  width: 100%;
+  min-width: 0;
+}
+.referrals-admin,
+.referrals-admin-panel {
+  min-width: 0;
+}
+.referrals-tracking-table {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.referrals-tracking-table table {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+  text-align: left;
+}
+.referrals-tracking-table th,
+.referrals-tracking-table td {
+  padding: 10px;
+  border-bottom: 1px solid #bd9b5e50;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+.referrals-tracking-table thead {
+  background: #132a22;
+  color: #f5d88d;
+}
+.referrals-tracking-table small,
+.referrals-tracking-table progress {
+  display: block;
+  margin-top: 3px;
+}
+.referrals-tracking-table small {
+  font-weight: normal;
+}
+.referrals-tracking-table progress {
+  width: 95px;
+  accent-color: #e9bd69;
+}
