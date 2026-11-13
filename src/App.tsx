@@ -1,6 +1,7 @@
 import { TournamentAdmin } from "./components/TournamentAdmin";
 import { DailyRankingAdmin } from "./components/DailyRankingAdmin";
 import { LobbyActivityAdmin } from "./components/LobbyActivityAdmin";
+import { ReferralsAdmin } from "./components/ReferralsAdmin";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, ApiError, message, navigate } from "./api";
 import { Access } from "./components/Access";
@@ -10,7 +11,7 @@ import type { User } from "./types";
 
 export function App() {
   const [section, setSection] = useState<
-    "catalog" | "tournaments" | "ranking" | "lobby"
+    "catalog" | "tournaments" | "ranking" | "lobby" | "referrals"
   >("catalog");
   const [user, setUser] = useState<User | null>(null);
   const [booting, setBooting] = useState(true);
@@ -131,6 +132,12 @@ export function App() {
                 >
                   Actividad del salón
                 </button>
+                <button
+                  aria-current={section === "referrals" ? "page" : undefined}
+                  onClick={() => setSection("referrals")}
+                >
+                  Referidos
+                </button>
               </>
             )}
             <a href={gameUrl} target="_blank" rel="noreferrer">
@@ -211,6 +218,8 @@ export function App() {
               <DailyRankingAdmin key={user.id} onDenied={denied} />
             ) : section === "lobby" ? (
               <LobbyActivityAdmin key={user.id} onDenied={denied} />
+            ) : section === "referrals" ? (
+              <ReferralsAdmin key={user.id} onDenied={denied} />
             ) : section === "tournaments" ? (
               <TournamentAdmin
                 key={user.id}

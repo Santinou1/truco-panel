@@ -2,6 +2,7 @@ import { createRequire } from "node:module";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { readFile } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
 const backend = resolve("../truco-back");
 const require = createRequire(resolve(backend, "package.json"));
 let fixture;
@@ -13,6 +14,15 @@ export function assertTestMail() {
 }
 let testPool;
 let testApp;
+export async function createTestReferralOwner() {
+  assertTestMail();
+  const { UsersService } = require("./dist/modules/users/users.service.js");
+  const { ReferralsService } = require("./dist/modules/referrals/referrals.service.js");
+  const id = await testApp.get(UsersService).google({
+    sub: randomUUID(), email: "referido-fixture@example.test", name: "Invitador de prueba",
+  });
+  return { id, summary: () => testApp.get(ReferralsService).summary(id) };
+}
 
 // Only this isolated browser-test database is used; never creates a production admin.
 export async function prepareTestAdmin(password) {
