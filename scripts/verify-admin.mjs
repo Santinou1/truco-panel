@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import {
   prepareTestAdmin,
+  createTestReferralOwner,
   revokeTestAdmin,
   testOtp,
 } from "./browser-mail-fixture.mjs";
@@ -103,6 +104,21 @@ export async function verifyAdmin(browser, base) {
     const me = await (await context.request.get(base + "/api/users/me")).json();
     assert.equal(me.role, "super_admin");
     assert.equal(me.adminPanelUrl, base);
+    const referralOwner = await createTestReferralOwner();
+    await page.getByRole("button", { name: "Referidos", exact: true }).click();
+    await page.getByLabel("Usuario, correo o ID exacto").fill(referralOwner.id);
+    await page.getByRole("button", { name: "Buscar cuenta" }).click();
+    const assign = page.getByRole("button", { name: "Generar y asignar" });
+    await Promise.all([
+      page.waitForResponse(response => response.url().endsWith("/api/admin/referrals/code") && response.status() === 200),
+      assign.click(),
+    ]);
+    await expect(page.getByText(/^Código: [0-9]{4}$/)).toBeVisible();
+    const savedCode = await referralOwner.summary();
+    assert.match(savedCode.ownCode, /^[0-9]{4}$/);
+    await expect(page.getByText("Código: " + savedCode.ownCode)).toBeVisible();
+    await page.getByRole("button", { name: "Catálogo y precios", exact: false }).click();
+    report.checks.push("Referidos: búsqueda por cuenta exacta y código de cuatro dígitos asignado desde el panel");
     assert.equal(
       (await context.request.get(base + "/api/admin/panel")).status(),
       404,

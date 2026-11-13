@@ -1,0 +1,11 @@
+.referrals-admin {display:grid;gap:18px}
+.referrals-admin p {margin:8px 0}
+.referrals-admin-panel,.referrals-admin-notice {padding:clamp(15px,3vw,25px)}
+.referrals-admin-panel form {margin:16px 0}
+.referrals-admin-actions {display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:7px}
+.referrals-admin-actions input {max-width:100%;width:min(100%,330px)}
+.referrals-admin-actions select {max-width:100%}
+.referrals-admin-panel ul {list-style:none;margin:12px 0 0;padding:0}
+.referrals-admin-row {display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-top:1px solid #bd9b5e50;padding:12px 0;overflow-wrap:anywhere}
+.referrals-admin-row > div:first-child {display:grid;gap:4px}
+.referrals-admin-code {color:#f5d88d;font-variant-numeric:tabular-nums;letter-spacing:.08em}
