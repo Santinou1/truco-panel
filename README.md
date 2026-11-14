@@ -73,7 +73,7 @@ Simulaciones: el panel permite configurar de 0 a 8/16 bots. Se incorporan al pub
 
 La sección **Ranking diario** abre el calendario de jornadas. Elegí una fecha para consultar el ganador o líder, los totales y la clasificación. **Ver partidas** muestra el historial del jugador en esa jornada. Se puede buscar por nombre, correo del rival o ID de partida y filtrar por resultado.
 
-El detalle muestra los equipos, el marcador y las horas de inicio y final en Argentina. La API comprueba el rol de superadministrador vigente en cada consulta. La prueba conjunta `npm run test:ranking:browser` se ejecuta desde `truco-back`.
+El detalle muestra los equipos, el marcador, las horas de inicio y final en Argentina y la duración. En **Manos de la partida** podés abrir cada mano y ver las cartas jugadas en primera, segunda y tercera con las imágenes publicadas del mazo. Cada baza muestra sus cantos, respuestas y puntos. La API comprueba el rol de superadministrador vigente en cada consulta. La prueba conjunta `npm run test:ranking:browser` se ejecuta desde `truco-back`.
 
 ## Integración de testing — 2026-11-08
 

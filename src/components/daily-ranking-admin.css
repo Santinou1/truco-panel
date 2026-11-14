@@ -291,6 +291,9 @@
   color: #f0d08a;
 }
 .ranking-admin-times {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
   margin-top: 9px;
 }
 .ranking-admin-notice {
@@ -303,6 +306,124 @@
 }
 .ranking-admin-notice b {
   color: #f0d08a;
+}
+.ranking-admin-hands {
+  margin-top: 20px;
+}
+.ranking-admin-hands h2 {
+  margin-bottom: 8px;
+}
+.ranking-admin-hand {
+  margin-top: 8px;
+  overflow-wrap: anywhere;
+}
+.ranking-admin-hand summary {
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  cursor: pointer;
+}
+.ranking-admin-hand summary::-webkit-details-marker {
+  display: none;
+}
+.ranking-admin-hand summary::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid #f0d08a;
+  border-bottom: 2px solid #f0d08a;
+  transform: rotate(-45deg);
+}
+.ranking-admin-hand[open] summary {
+  background: #243e30;
+}
+.ranking-admin-hand[open] summary::before {
+  transform: rotate(45deg);
+}
+.ranking-admin-hand-title {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 3px 10px;
+}
+.ranking-admin-hand summary strong {
+  color: #f0d08a;
+}
+.ranking-admin-hand-score {
+  padding: 1px 7px;
+  border: 1px solid var(--ranking-line);
+  border-radius: 5px;
+  font-variant-numeric: tabular-nums;
+}
+.ranking-admin-hand-body {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 8px;
+  border-top: 1px solid var(--ranking-line);
+  padding: 8px;
+}
+.ranking-admin-trick {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--ranking-line);
+  border-radius: 6px;
+  background: #142e24;
+}
+.ranking-admin-trick h3 {
+  margin: 0;
+  color: #f0d08a;
+  font: 1.2rem var(--font-ui);
+}
+.ranking-admin-trick p {
+  margin: 8px 0 0;
+  color: #c7d2bf;
+}
+.ranking-admin-trick .ranking-admin-trick-result {
+  color: #f0d08a;
+}
+.ranking-admin-plays {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+  margin: 10px 0 0;
+  list-style: none;
+}
+.ranking-admin-plays li {
+  flex: 0 0 calc((100% - 8px) / 2);
+  max-width: 86px;
+  text-align: center;
+}
+.ranking-admin-plays img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 288 / 464;
+  object-fit: contain;
+  border-radius: 5px;
+}
+.ranking-admin-plays span {
+  display: block;
+  margin-top: 4px;
+}
+.ranking-admin-hand-timeline {
+  display: grid;
+  gap: 7px;
+  margin: 10px 0 0;
+  padding: 10px 0 0;
+  border-top: 1px solid var(--ranking-line);
+  list-style: none;
+}
+.ranking-admin-hand-timeline li {
+  display: grid;
+  gap: 2px;
+}
+.ranking-admin-hand-timeline time {
+  color: #c7d2bf;
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
 }
 @media (max-width: 1100px) {
   .ranking-admin-calendar {
@@ -350,5 +471,11 @@
   }
   .ranking-admin-versus .ranking-admin-tag {
     font-size: 10px;
+  }
+  .ranking-admin-times {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ranking-admin-times > :last-child {
+    grid-column: 1 / -1;
   }
 }

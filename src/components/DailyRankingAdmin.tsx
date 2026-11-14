@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, ApiError, message } from "../api";
 import { asset, catalog } from "../catalog";
+import { MatchHands, type AuditedHand } from "./MatchHands";
 import "./daily-ranking-admin.css";
 
 type Person = { userId: string; displayName: string; avatarId: string | null };
@@ -43,6 +44,7 @@ type MatchDetail = {
   winner: 0 | 1;
   finishReason: "points" | "resign" | "disconnect_timeout";
   players: (Person & { seat: number; team: 0 | 1; delta: number })[];
+  hands?: AuditedHand[];
 };
 type Denied = (status: 401 | 403) => void;
 const endpoint = "/admin/ranking/daily";
@@ -73,6 +75,12 @@ const date = (iso: string) => new Date(iso + "T00:00:00Z");
 const dateText = (day: string) => dayFormat.format(date(day));
 const time = (iso: string) => timeFormat.format(new Date(iso));
 const stamp = (iso: string) => stampFormat.format(new Date(iso));
+function duration(startedAt: string, finishedAt: string) {
+  const seconds = Math.floor((Date.parse(finishedAt) - Date.parse(startedAt)) / 1000);
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor(seconds / 60) % 60;
+  return `${hours ? hours + " h " : ""}${minutes} min ${seconds % 60} s`;
+}
 const shortId = (id: string) => "#" + id.slice(0, 8).toUpperCase();
 const deltaText = (delta: number) => (delta < 0 ? "−" : "+") + Math.abs(delta);
 const statusLabel = {
@@ -719,7 +727,7 @@ export function DailyRankingAdmin({ onDenied }: { onDenied: Denied }) {
                   </section>
                 ))}
               </div>
-              <div className="ranking-admin-pair ranking-admin-times">
+              <div className="ranking-admin-times">
                 <div>
                   <span className="eyebrow">
                     INICIO · {stamp(data.startedAt)}
@@ -731,6 +739,10 @@ export function DailyRankingAdmin({ onDenied }: { onDenied: Denied }) {
                     FINAL · {stamp(data.finishedAt)}
                   </span>
                   <strong>{time(data.finishedAt)}</strong>
+                </div>
+                <div>
+                  <span className="eyebrow">DURACIÓN</span>
+                  <strong>{duration(data.startedAt, data.finishedAt)}</strong>
                 </div>
               </div>
               <div className="panel ranking-admin-notice">
@@ -745,6 +757,7 @@ export function DailyRankingAdmin({ onDenied }: { onDenied: Denied }) {
                   <small>Terminó por desconexión.</small>
                 )}
               </div>
+              <MatchHands hands={data.hands ?? []} players={data.players} />
             </>
           ) : (
             <Loading error={match.error} retry={match.refresh} />
