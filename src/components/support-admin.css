@@ -1,0 +1,53 @@
+.support-admin h1 {
+  margin: 0;
+}
+.support-admin-actions {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 15px 0;
+}
+.support-admin-actions label {
+  margin: 0;
+}
+.support-admin-list {
+  display: grid;
+  gap: 10px;
+}
+.support-admin-card {
+  padding: 14px clamp(14px, 3vw, 22px);
+  overflow-wrap: anywhere;
+}
+.support-admin-card summary {
+  cursor: pointer;
+}
+.support-admin-card summary span {
+  display: block;
+  margin-top: 4px;
+}
+.support-admin-content {
+  border-top: 1px solid #d6b47045;
+  margin-top: 12px;
+}
+.support-admin-text {
+  white-space: pre-wrap;
+}
+.support-admin-content textarea {
+  width: 100%;
+  resize: vertical;
+  font: inherit;
+  color: inherit;
+  background: #13291f;
+  border: 1px solid #d9b46c80;
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+.support-admin-resolution {
+  padding: 12px;
+  background: #142e24;
+  border-radius: 6px;
+}
+.support-admin-pagination {
+  justify-content: space-between;
+}
