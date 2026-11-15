@@ -2,6 +2,7 @@ import { TournamentAdmin } from "./components/TournamentAdmin";
 import { DailyRankingAdmin } from "./components/DailyRankingAdmin";
 import { LobbyActivityAdmin } from "./components/LobbyActivityAdmin";
 import { ReferralsAdmin } from "./components/ReferralsAdmin";
+import { SupportAdmin } from "./components/SupportAdmin";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, ApiError, message, navigate } from "./api";
 import { Access } from "./components/Access";
@@ -11,7 +12,7 @@ import type { User } from "./types";
 
 export function App() {
   const [section, setSection] = useState<
-    "catalog" | "tournaments" | "ranking" | "lobby" | "referrals"
+    "catalog" | "tournaments" | "ranking" | "lobby" | "referrals" | "support"
   >("catalog");
   const [user, setUser] = useState<User | null>(null);
   const [booting, setBooting] = useState(true);
@@ -138,6 +139,12 @@ export function App() {
                 >
                   Referidos
                 </button>
+                <button
+                  aria-current={section === "support" ? "page" : undefined}
+                  onClick={() => setSection("support")}
+                >
+                  Ticketera
+                </button>
               </>
             )}
             <a href={gameUrl} target="_blank" rel="noreferrer">
@@ -220,6 +227,8 @@ export function App() {
               <LobbyActivityAdmin key={user.id} onDenied={denied} />
             ) : section === "referrals" ? (
               <ReferralsAdmin key={user.id} onDenied={denied} />
+            ) : section === "support" ? (
+              <SupportAdmin key={user.id} onDenied={denied} />
             ) : section === "tournaments" ? (
               <TournamentAdmin
                 key={user.id}
