@@ -65,7 +65,7 @@ function PriceEditor({
       if (!mounted.current) return;
       onSaved({ ...item, price: saved.price });
       setDraft(String(saved.price));
-      setStatus(`Guardado: ${saved.price.toLocaleString("es-AR")} fichas.`);
+      setStatus(`Guardado: ${saved.price.toLocaleString("es-AR")} patacones.`);
     } catch (error) {
       if (!mounted.current) return;
       if (
@@ -102,7 +102,7 @@ function PriceEditor({
           <span className="eyebrow">{categories[item.category]}</span>
           <h2>{name}</h2>
           <p className="admin-current">
-            Actual: <strong>{item.price.toLocaleString("es-AR")}</strong> fichas
+            Actual: <strong>{item.price.toLocaleString("es-AR")}</strong> patacones
           </p>
         </div>
       </div>
@@ -112,7 +112,7 @@ function PriceEditor({
           void save();
         }}
       >
-        <label htmlFor={inputId}>Precio en fichas</label>
+        <label htmlFor={inputId}>Precio en patacones</label>
         <div className="admin-price-control">
           <input
             id={inputId}
@@ -230,7 +230,7 @@ export function Admin({ onDenied }: { onDenied: Denied }) {
       </section>
       <div className="section-heading">
         <h2>Catálogo de diseños</h2>
-        <span>Precios en fichas</span>
+        <span>Precios en patacones</span>
       </div>
       <div className="admin-toolbar panel">
         <label htmlFor="admin-search">
@@ -318,7 +318,7 @@ export function Admin({ onDenied }: { onDenied: Denied }) {
         </>
       )}
       <p className="admin-footnote">
-        Los valores están expresados en fichas. Los diseños iniciales siguen
+        Los valores están expresados en patacones. Los diseños iniciales siguen
         incluidos sin costo.
       </p>
     </main>

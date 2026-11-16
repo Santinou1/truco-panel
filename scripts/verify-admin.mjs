@@ -163,7 +163,7 @@ export async function verifyAdmin(browser, base) {
     await expect(page.locator(".admin-card:visible")).toHaveCount(1);
     await save().click();
     await expect(
-      page.getByText(`Guardado: ${nextPrice} fichas.`, { exact: true }),
+      page.getByText(`Guardado: ${nextPrice} patacones.`, { exact: true }),
     ).toBeVisible();
     await page.reload();
     await expect(input()).toHaveValue(String(nextPrice));
@@ -208,12 +208,12 @@ export async function verifyAdmin(browser, base) {
     await page.unroute("**/api/admin/assets");
     await save().click();
     await expect(
-      page.getByText("Guardado: 444 fichas.", { exact: true }),
+      page.getByText("Guardado: 444 patacones.", { exact: true }),
     ).toBeVisible();
     await input().fill(String(nextPrice));
     await save().click();
     await expect(
-      page.getByText(`Guardado: ${nextPrice} fichas.`, { exact: true }),
+      page.getByText(`Guardado: ${nextPrice} patacones.`, { exact: true }),
     ).toBeVisible();
     report.checks.push(
       "Validación, error de red simulado sin éxito falso ni perder borrador, reintento real",

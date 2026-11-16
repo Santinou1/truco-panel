@@ -62,14 +62,14 @@ export function FiatGamesAdmin({ onDenied }: { onDenied: (status: 401 | 403) => 
   return (
     <main className="page">
       <section className="panel lobby-activity-admin" aria-labelledby="fiat-games-title">
-        <h1 id="fiat-games-title">Mesas en pesos</h1>
+        <h1 id="fiat-games-title">Mesas con patacones reales</h1>
         <p>La comisión se descuenta del pozo bruto de cada partida. El porcentaje que acepta cada mesa se fija cuando se crea.</p>
         <p className="muted">Al pausar, no se pueden abrir ni iniciar mesas nuevas. Las partidas que ya empezaron se liquidan con su comisión original.</p>
         {error && <p role="alert">{error}</p>}
         {!terms && !error && <p role="status">Consultando la configuración…</p>}
         {terms && (
           <form onSubmit={(event) => void save(event)}>
-            {!terms.available && <p>El juego en pesos no está disponible en este ambiente.</p>}
+            {!terms.available && <p>El juego con patacones reales no está disponible en este ambiente.</p>}
             <label>
               Comisión del pozo bruto (%)
               <input type="text" inputMode="decimal" maxLength={5} required
@@ -80,7 +80,7 @@ export function FiatGamesAdmin({ onDenied }: { onDenied: (status: 401 | 403) => 
                 <input type="checkbox" checked={enabled}
                   disabled={busy || (!terms.available && !enabled)}
                   onChange={(event) => setEnabled(event.target.checked)} />
-                {" "}Habilitar mesas en pesos
+                {" "}Habilitar mesas con patacones reales
               </label>
               <button type="submit" className="primary" disabled={busy}>
                 {busy ? "Guardando…" : "Guardar cambios"}

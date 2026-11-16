@@ -60,7 +60,7 @@ export function Access({
         </p>
         <img
           src={asset("economia/cofre-cerrado.png")}
-          alt="Cofre de fichas de La Pulpería"
+          alt="Cofre de patacones de La Pulpería"
         />
         <span className="welcome-foot">
           PERSONAJES · MARCOS · MESAS · REVERSOS

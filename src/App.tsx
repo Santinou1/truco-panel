@@ -138,7 +138,7 @@ export function App() {
                   aria-current={section === "fiat-games" ? "page" : undefined}
                   onClick={() => setSection("fiat-games")}
                 >
-                  Mesas en pesos
+                  Mesas con patacones reales
                 </button>
                 <button
                   aria-current={section === "referrals" ? "page" : undefined}
