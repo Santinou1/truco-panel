@@ -5,9 +5,81 @@ import {
   prepareTestAdmin,
   createTestReferralOwner,
   createTestReferralLinks,
+  createTestTransfers,
   revokeTestAdmin,
   testOtp,
 } from "./browser-mail-fixture.mjs";
+
+async function verifyFiatTransferAudit(page, base, headers, dir) {
+  const fixture = await createTestTransfers();
+  const endpoint = base + "/api/admin/fiat-transfers";
+  const detail = (kind, id) => page.request.get(`${endpoint}/${kind}/${id}`);
+  const search = data => page.request.post(endpoint + "/search", { headers, data });
+  const first = await search({ search: fixture.userId, limit: 1 });
+  assert.equal(first.status(), 200);
+  assert.equal(first.headers()["cache-control"], "no-store");
+  const firstPage = await first.json();
+  assert.equal(firstPage.hasMore, true);
+  const secondPage = await (await search({ search: fixture.userId, limit: 1, offset: 1 })).json();
+  assert.notEqual(firstPage.items[0].id, secondPage.items[0].id);
+  const byReference = await (await search({ search: fixture.providerReference })).json();
+  assert.equal(byReference.items[0].id, fixture.credited);
+  const rejected = await (await search({ search: fixture.email, kind: "withdrawal", status: "failed" })).json();
+  assert.deepEqual(rejected.items.map(item => item.id), [fixture.rejected]);
+  const errors = await (await search({ search: fixture.email, kind: "deposit", withErrors: true })).json();
+  assert.deepEqual(errors.items.map(item => item.id), [fixture.issuanceError]);
+  const failure = await detail("deposit", fixture.issuanceError);
+  const rawFailure = await failure.text();
+  assert.equal(failure.status(), 200);
+  assert.match(rawFailure, /"httpStatus":500/);
+  assert.doesNotMatch(rawFailure, /private-fixture|ciphertext/);
+  const trail = await (await detail("withdrawal", fixture.rejected)).json();
+  assert.equal(trail.events.length, 50);
+  assert.equal(trail.hasMore, true);
+  const older = await (await page.request.get(`${endpoint}/withdrawal/${fixture.rejected}?offset=50`)).json();
+  assert.equal(older.events.length, 2);
+  assert.equal(older.hasMore, false);
+  assert.equal((await search({ status: "invalid" })).status(), 400);
+  assert.equal((await detail("withdrawal", fixture.credited)).status(), 404);
+
+  await page.getByRole("button", { name: "Auditoría de transferencias", exact: true }).click();
+  const query = page.getByLabel("Usuario o referencia");
+  await query.fill(fixture.email);
+  await page.getByRole("button", { name: "Buscar", exact: true }).click();
+  const table = page.getByRole("region", { name: "Resultados de transferencias" });
+  await expect(table.locator("tbody tr")).toHaveCount(5);
+  const posted = table.getByRole("row").filter({ hasText: "Acreditada" });
+  const review = table.getByRole("row").filter({ hasText: "En revisión" });
+  await expect(posted).toContainText(/486,75/);
+  await expect(review).toContainText(/0,00/);
+  await page.screenshot({ path: dir + "/auditoria-transferencias.png", fullPage: true });
+  await posted.getByRole("button", { name: /Ver detalle/ }).click();
+  await expect(page.getByText("Acreditación en el saldo")).toBeVisible();
+  await expect(page.getByText("Transferencia recibida")).toBeVisible();
+  await expect(page.getByText("Orden de carga iniciada")).toBeVisible();
+  await page.screenshot({ path: dir + "/auditoria-carga.png", fullPage: true });
+  await page.getByRole("button", { name: /Volver a transferencias/ }).click();
+  await expect(query).toHaveValue(fixture.email);
+  await review.getByRole("button", { name: /Ver detalle/ }).click();
+  await expect(page.getByText(/No se confirmó la titularidad/)).toBeVisible();
+  await expect(page.getByText("Acreditación en el saldo")).toHaveCount(0);
+  await page.getByRole("button", { name: /Volver a transferencias/ }).click();
+  await page.getByLabel("Tipo", { exact: true }).selectOption("withdrawal");
+  await page.getByLabel("Estado", { exact: true }).selectOption("awaiting_signature");
+  await page.getByRole("button", { name: "Buscar", exact: true }).click();
+  await expect(table.locator("tbody tr")).toHaveCount(1);
+  await page.setViewportSize({ width: 320, height: 850 });
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+  await table.getByRole("button", { name: /Ver detalle/ }).click();
+  await expect(page.getByText("Retiro solicitado", { exact: true })).toBeVisible();
+  await expect(page.getByText("Neto transferido", { exact: true })).toBeVisible();
+  await expect(page.getByText("Sin confirmar", { exact: true })).toBeVisible();
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+  await page.screenshot({ path: dir + "/auditoria-retiro-mobile.png", fullPage: true });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.getByRole("button", { name: /Catálogo y precios/ }).click();
+  return fixture;
+}
 
 export async function verifyAdmin(browser, base) {
   const dir = "docs/evidence/001-panel-administracion";
@@ -49,6 +121,7 @@ export async function verifyAdmin(browser, base) {
   let initialPrice;
   try {
     await page.goto(base + "/");
+    assert.equal((await context.request.post(base + "/api/admin/fiat-transfers/search", { headers, data: {} })).status(), 401);
     await expect(page.getByLabel("Email", { exact: true })).toBeVisible();
     await expect(page).toHaveURL(base + "/");
     await expect(
@@ -78,6 +151,8 @@ export async function verifyAdmin(browser, base) {
     await expect(
       page.getByRole("button", { name: "Catálogo y precios", exact: false }),
     ).toBeVisible();
+    const audit = await verifyFiatTransferAudit(page, base, headers, dir);
+    report.checks.push("Auditoría: búsqueda, paginación, importes, cargas en revisión, aprobación, errores y móvil");
     const activity = () => page.getByRole("button", { name: "Actividad del salón", exact: true });
     await activity().click();
     const readActivity = async () => (await context.request.get(base + "/api/admin/lobby-activity")).json();
@@ -312,6 +387,8 @@ export async function verifyAdmin(browser, base) {
       data: { category: "frames", assetId: "oro", price: initialPrice },
     });
     await revokeTestAdmin(admin.userId);
+    assert.equal((await context.request.post(base + "/api/admin/fiat-transfers/search", { headers, data: {} })).status(), 403);
+    assert.equal((await context.request.get(base + "/api/admin/fiat-transfers/deposit/" + audit.credited)).status(), 403);
     await input().fill("888");
     await save().click();
     await expect(
