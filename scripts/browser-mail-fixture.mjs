@@ -2,7 +2,7 @@ import { createRequire } from "node:module";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { readFile } from "node:fs/promises";
-import { randomUUID } from "node:crypto";
+import { randomInt, randomUUID } from "node:crypto";
 const backend = resolve("../truco-back");
 const require = createRequire(resolve(backend, "package.json"));
 let fixture;
@@ -43,6 +43,61 @@ export async function createTestReferralLinks(code) {
       [id, games],
     );
   }
+}
+
+export async function createTestTransfers() {
+  assertTestMail();
+  const { UsersService } = require("./dist/modules/users/users.service.js");
+  const email = `transferencias-${randomUUID()}@example.test`;
+  const userId = await testApp.get(UsersService).google({
+    sub: randomUUID(), email, name: "Titular de prueba",
+  });
+  const credited = randomUUID(), review = randomUUID(), issuanceError = randomUUID();
+  const pending = randomUUID(), rejected = randomUUID();
+  const providerReference = String(randomInt(1000000000, 1000000000000));
+  const deposit = randomUUID();
+  await testPool.transaction(async tx => {
+    await tx.query("INSERT INTO identity.personas(user_id,details_ciphertext) VALUES($1,'private-fixture')", [userId]);
+    for (const [id, cvu] of [[credited, "0000000000000000000001"], [review, "0000000000000000000002"], [issuanceError, null]]) {
+      await tx.query(`
+        INSERT INTO economy_fiat.deposit_orders(id,user_id,request_id,company_id,amount_minor,alias,cvu,attempts,expires_at)
+        VALUES($1,$2,$3,'77',50000,$4,$5::text,1,CASE WHEN $5::text IS NOT NULL THEN now()+interval '30 minutes' END)
+      `, [id, userId, randomUUID(), "fixture." + id, cvu]);
+    }
+    await tx.query(`
+      INSERT INTO economy_fiat.deposit_transactions(id,order_id,company_id,provider_transaction_id,gross_minor,net_minor,review_reason)
+      VALUES($1,$2,'77',$3,50000,48675,NULL),($4,$5,'77',$6,50000,48675,'origin_unconfirmed')
+    `, [deposit, credited, providerReference, randomUUID(), review, String(randomInt(1000000000, 1000000000000))]);
+    await tx.query("INSERT INTO economy_fiat.journal_entries(deposit_id,user_id,amount_minor) VALUES($1,$2,48675)",
+      [deposit, userId]);
+    await tx.query(`
+      INSERT INTO economy_fiat.cresium_audit(id,order_id,company_id,operation,outcome,http_status,response_ciphertext)
+      VALUES($1,$2,'77','create_order','provider_error',500,'private-fixture')
+    `, [randomUUID(), issuanceError]);
+    await tx.query(`
+      INSERT INTO economy_fiat.withdrawal_destinations(user_id,account_fingerprint,account_ciphertext)
+      VALUES($1,'fixture','private-fixture')
+    `, [userId]);
+    for (const id of [pending, rejected]) {
+      await tx.query(`
+        INSERT INTO economy_fiat.withdrawals(id,user_id,request_id,company_id,environment,amount_minor,
+          account_fingerprint,account_type,account_suffix)
+        VALUES($1,$2,$3,'77','sandbox',20000,'fixture','CBU','0001')
+      `, [id, userId, randomUUID()]);
+    }
+    await tx.query(`
+      UPDATE economy_fiat.withdrawals
+      SET status='awaiting_signature',provider_address_id='123',provider_transaction_id=$2,net_minor=19350
+      WHERE id=$1
+    `, [pending, String(randomInt(1000000000, 1000000000000))]);
+    await tx.query("UPDATE economy_fiat.withdrawals SET status='failed' WHERE id=$1", [rejected]);
+    await tx.query(`
+      INSERT INTO economy_fiat.cresium_audit(id,withdrawal_id,company_id,operation,outcome,http_status,created_at)
+      SELECT gen_random_uuid(),$1,'77','withdrawal_lookup_transaction','received',200,now()-n*interval '1 second'
+      FROM generate_series(1,50) AS n
+    `, [rejected]);
+  });
+  return { email, userId, credited, issuanceError, rejected, providerReference };
 }
 
 // Only this isolated browser-test database is used; never creates a production admin.

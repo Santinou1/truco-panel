@@ -2,6 +2,7 @@ import { TournamentAdmin } from "./components/TournamentAdmin";
 import { DailyRankingAdmin } from "./components/DailyRankingAdmin";
 import { LobbyActivityAdmin } from "./components/LobbyActivityAdmin";
 import { FiatGamesAdmin } from "./components/FiatGamesAdmin";
+import { FiatTransfersAdmin } from "./components/FiatTransfersAdmin";
 import { ReferralsAdmin } from "./components/ReferralsAdmin";
 import { SupportAdmin } from "./components/SupportAdmin";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -13,7 +14,7 @@ import type { User } from "./types";
 
 export function App() {
   const [section, setSection] = useState<
-    "catalog" | "tournaments" | "ranking" | "lobby" | "fiat-games" | "referrals" | "support"
+    "catalog" | "tournaments" | "ranking" | "lobby" | "fiat-games" | "fiat-transfers" | "referrals" | "support"
   >("catalog");
   const [user, setUser] = useState<User | null>(null);
   const [booting, setBooting] = useState(true);
@@ -141,6 +142,12 @@ export function App() {
                   Mesas con patacones reales
                 </button>
                 <button
+                  aria-current={section === "fiat-transfers" ? "page" : undefined}
+                  onClick={() => setSection("fiat-transfers")}
+                >
+                  Auditoría de transferencias
+                </button>
+                <button
                   aria-current={section === "referrals" ? "page" : undefined}
                   onClick={() => setSection("referrals")}
                 >
@@ -234,6 +241,8 @@ export function App() {
               <LobbyActivityAdmin key={user.id} onDenied={denied} />
             ) : section === "fiat-games" ? (
               <FiatGamesAdmin key={user.id} onDenied={denied} />
+            ) : section === "fiat-transfers" ? (
+              <FiatTransfersAdmin key={user.id} onDenied={denied} />
             ) : section === "referrals" ? (
               <ReferralsAdmin key={user.id} onDenied={denied} />
             ) : section === "support" ? (
