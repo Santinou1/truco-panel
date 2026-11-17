@@ -78,7 +78,7 @@ export function LobbyActivityAdmin({ onDenied }: { onDenied: Denied }) {
         aria-labelledby="lobby-activity-title"
       >
         <h1 id="lobby-activity-title">Actividad del salón</h1>
-        <p>Los bots abren mesas de 100 fichas, atienden las altas y completan mesas públicas.</p>
+        <p>Los bots abren mesas de 100 patacones ficticios, atienden las altas y completan mesas públicas.</p>
         <p className="muted">
           Al desactivar la actividad, se cierran sus mesas en espera y se liberan los lugares
           que ocupan en mesas de otros jugadores. Las partidas empezadas siguen su curso.

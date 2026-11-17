@@ -210,7 +210,7 @@ export function ReferralTracking({
       {overview && (
         <p>
           Al completar {overview.matchGoal} partidas que cuentan para la meta se
-          acreditan {overview.referredBonus} fichas al referido y{" "}
+          acreditan {overview.referredBonus} patacones al referido y{" "}
           {overview.referrerBonus} al dueño del código.
         </p>
       )}

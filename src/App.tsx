@@ -1,6 +1,7 @@
 import { TournamentAdmin } from "./components/TournamentAdmin";
 import { DailyRankingAdmin } from "./components/DailyRankingAdmin";
 import { LobbyActivityAdmin } from "./components/LobbyActivityAdmin";
+import { FiatGamesAdmin } from "./components/FiatGamesAdmin";
 import { ReferralsAdmin } from "./components/ReferralsAdmin";
 import { SupportAdmin } from "./components/SupportAdmin";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -12,7 +13,7 @@ import type { User } from "./types";
 
 export function App() {
   const [section, setSection] = useState<
-    "catalog" | "tournaments" | "ranking" | "lobby" | "referrals" | "support"
+    "catalog" | "tournaments" | "ranking" | "lobby" | "fiat-games" | "referrals" | "support"
   >("catalog");
   const [user, setUser] = useState<User | null>(null);
   const [booting, setBooting] = useState(true);
@@ -134,6 +135,12 @@ export function App() {
                   Actividad del salón
                 </button>
                 <button
+                  aria-current={section === "fiat-games" ? "page" : undefined}
+                  onClick={() => setSection("fiat-games")}
+                >
+                  Mesas con patacones reales
+                </button>
+                <button
                   aria-current={section === "referrals" ? "page" : undefined}
                   onClick={() => setSection("referrals")}
                 >
@@ -225,6 +232,8 @@ export function App() {
               <DailyRankingAdmin key={user.id} onDenied={denied} />
             ) : section === "lobby" ? (
               <LobbyActivityAdmin key={user.id} onDenied={denied} />
+            ) : section === "fiat-games" ? (
+              <FiatGamesAdmin key={user.id} onDenied={denied} />
             ) : section === "referrals" ? (
               <ReferralsAdmin key={user.id} onDenied={denied} />
             ) : section === "support" ? (

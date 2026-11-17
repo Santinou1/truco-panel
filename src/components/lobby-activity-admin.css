@@ -17,3 +17,37 @@
 .lobby-activity-actions p {
   margin: 0;
 }
+
+.fiat-admin-config {
+  min-width: 0;
+  margin: 1.2rem 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.fiat-admin-config legend,
+.fiat-admin-config h2 {
+  color: #f2d49a;
+  font-size: 1.1rem;
+}
+
+.fiat-admin-config h2 {
+  margin: 0.9rem 0 0.35rem;
+}
+
+.fiat-admin-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+  margin-bottom: 0.45rem;
+}
+
+.fiat-admin-tier {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.fiat-admin-row label,
+.fiat-admin-row input {
+  min-width: 0;
+  width: 100%;
+}
