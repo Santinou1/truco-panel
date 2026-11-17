@@ -25,7 +25,7 @@ type EventData =
   | { kind: "deposit"; data: {
       providerTransactionId: string; grossMinor: string; netMinor: string; reviewReason: string | null;
     } }
-  | { kind: "credit"; data: { amountMinor: string; providerTransactionId: string } }
+  | { kind: "credit"; data: { amountMinor: string; providerTransactionId: string; coversCresiumFee?: boolean } }
   | { kind: "withdrawal_status"; data: { status: string } }
   | { kind: "provider"; data: {
       operation: string; outcome: string; httpStatus: number | null; providerTransactionId: string | null;
@@ -161,7 +161,7 @@ function AuditEventItem({ event }: { event: AuditEvent }) {
       reference = event.data.providerTransactionId;
       break;
     case "credit":
-      title = "Acreditación en el saldo";
+      title = event.data.coversCresiumFee ? "Comisión cubierta por La Pulpería" : "Acreditación en el saldo";
       description = pesos(event.data.amountMinor);
       reference = event.data.providerTransactionId;
       break;
@@ -205,7 +205,7 @@ function TransferDetails({ selected, onDenied }: { selected: Transfer; onDenied:
       <dl className="transfer-amounts">
         <div><dt>Solicitado</dt><dd>{pesos(transfer.amountMinor)}</dd></div>
         {transfer.receivedMinor !== null && <div><dt>Bruto recibido</dt><dd>{pesos(transfer.receivedMinor)}</dd></div>}
-        <div><dt>{deposit ? "Neto acreditado" : "Neto transferido"}</dt>
+        <div><dt>{deposit ? "Total acreditado" : "Neto transferido"}</dt>
           <dd>{transfer.settledMinor !== null ? pesos(transfer.settledMinor) : "Sin confirmar"}</dd>
         </div>
         {transfer.netMinor !== null && transfer.settledMinor === null &&
