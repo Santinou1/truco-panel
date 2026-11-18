@@ -24,7 +24,9 @@ type Day = {
   pending: number;
 };
 type Page<T> = { items: T[]; total: number; limit: number; offset: number };
-type Calendar = { month: string; days: Day[] };
+type Currency = "PLAY_CHIP" | "ARS";
+type Prize = { currency: Currency; prizePool: number; prizeCurrency: "ARS" };
+type Calendar = Prize & { month: string; days: Day[] };
 type MatchRow = {
   id: string;
   startedAt: string;
@@ -76,7 +78,9 @@ const dateText = (day: string) => dayFormat.format(date(day));
 const time = (iso: string) => timeFormat.format(new Date(iso));
 const stamp = (iso: string) => stampFormat.format(new Date(iso));
 function duration(startedAt: string, finishedAt: string) {
-  const seconds = Math.floor((Date.parse(finishedAt) - Date.parse(startedAt)) / 1000);
+  const seconds = Math.floor(
+    (Date.parse(finishedAt) - Date.parse(startedAt)) / 1000,
+  );
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor(seconds / 60) % 60;
   return `${hours ? hours + " h " : ""}${minutes} min ${seconds % 60} s`;
@@ -89,6 +93,26 @@ const statusLabel = {
   settling: "Cerrando",
   closed: "Cerrada",
 };
+
+function RankingCoin() {
+  return (
+    <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <circle cx="16" cy="16" r="13" stroke="currentColor" strokeWidth="1.5" />
+      <circle
+        cx="16"
+        cy="16"
+        r="9"
+        stroke="currentColor"
+        strokeWidth=".7"
+        opacity=".5"
+      />
+      <path
+        d="m16 8 2.3 5.6 5.7 2.4-5.7 2.3L16 24l-2.4-5.7L8 16l5.6-2.4L16 8Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
 
 function useAdminRanking<T>(
   path: string | null,
@@ -269,7 +293,10 @@ function CalendarView({
       <div className="ranking-admin-heading">
         <div>
           <span className="eyebrow">COMPETENCIA DEL SALÓN</span>
-          <h1>Ranking diario</h1>
+          <h1>Calendario de jornadas</h1>
+          <p className="ranking-admin-prize">
+            Premio diario: ${calendar.prizePool.toLocaleString("es-AR")} ARS.
+          </p>
           <p>Elegí una fecha para consultar la clasificación y sus partidas.</p>
         </div>
         <button onClick={refresh}>↻ Actualizar</button>
@@ -340,6 +367,74 @@ function CalendarView({
 }
 
 export function DailyRankingAdmin({ onDenied }: { onDenied: Denied }) {
+  const [currency, setCurrency] = useState<Currency>("PLAY_CHIP");
+  return (
+    <main className="page ranking-admin" data-currency={currency}>
+      <div className="ranking-admin-toolbar">
+        <div className="ranking-admin-title">
+          <div>
+            <span className="eyebrow">ADMINISTRACIÓN DEL SALÓN</span>
+            <strong>Ranking diario</strong>
+          </div>
+          <span className="ranking-admin-window">09:00–03:00 · Argentina</span>
+        </div>
+        <div
+          className="ranking-admin-choice"
+          role="group"
+          aria-label="Elegir ranking diario"
+        >
+          {(["PLAY_CHIP", "ARS"] as const).map((value) => (
+            <button
+              type="button"
+              key={value}
+              data-currency={value}
+              aria-label={
+                value === "ARS" ? "Patacones reales" : "Freeroll · gratis"
+              }
+              aria-pressed={currency === value}
+              onClick={() => setCurrency(value)}
+            >
+              <span className="ranking-admin-coin">
+                <RankingCoin />
+              </span>
+              <span>
+                <strong>
+                  {value === "ARS" ? "Patacones reales" : "Freeroll · gratis"}
+                </strong>
+                <small>
+                  {value === "ARS"
+                    ? "Clasificación de mesas reales"
+                    : "Clasificación de mesas ficticias"}
+                </small>
+              </span>
+              <span className="ranking-admin-check" aria-hidden="true">
+                ✓
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+      <p className="ranking-admin-scope">
+        {currency === "ARS"
+          ? "Solo partidas con patacones reales."
+          : "Solo partidas con patacones ficticios, incluidas las mesas gratis."}
+      </p>
+      <RankingAdminBoard
+        key={currency}
+        currency={currency}
+        onDenied={onDenied}
+      />
+    </main>
+  );
+}
+
+function RankingAdminBoard({
+  currency,
+  onDenied,
+}: {
+  currency: Currency;
+  onDenied: Denied;
+}) {
   const [month, setMonth] = useState("");
   const [selectedDay, selectDay] = useState<string | null>(null);
   const [day, setDay] = useState<string | null>(null);
@@ -354,14 +449,19 @@ export function DailyRankingAdmin({ onDenied }: { onDenied: Denied }) {
   const [matchOffset, setMatchOffset] = useState(0);
   const dayPath = day ? endpoint + "/" + day : null;
   const calendar = useAdminRanking<Calendar>(
-    day ? null : endpoint + (month ? "?month=" + month : ""),
+    day
+      ? null
+      : endpoint +
+          "?" +
+          new URLSearchParams({ currency, ...(month ? { month } : {}) }),
     onDenied,
   );
   const boardQuery = new URLSearchParams({
+    currency,
     offset: String(dayOffset),
     search: dayFilter,
   });
-  const board = useAdminRanking<Day & Page<Player>>(
+  const board = useAdminRanking<Day & Prize & Page<Player>>(
     dayPath && !playerId ? dayPath + "?" + boardQuery : null,
     onDenied,
   );
@@ -369,13 +469,16 @@ export function DailyRankingAdmin({ onDenied }: { onDenied: Denied }) {
     dayPath && playerId && !matchId ? dayPath + "/players/" + playerId : null,
     onDenied,
     JSON.stringify({
+      currency,
       search: rivalFilter,
       offset: matchOffset,
       ...(outcome ? { outcome } : {}),
     }),
   );
   const match = useAdminRanking<MatchDetail>(
-    dayPath && matchId ? dayPath + "/matches/" + matchId : null,
+    dayPath && matchId
+      ? dayPath + "/matches/" + matchId + "?currency=" + currency
+      : null,
     onDenied,
   );
   function openDay(value: string) {
@@ -403,7 +506,7 @@ export function DailyRankingAdmin({ onDenied }: { onDenied: Denied }) {
   const history = player.data;
   const standings = board.data;
   return (
-    <main className="page ranking-admin">
+    <div>
       {view === "calendar" &&
         (calendar.data ? (
           <CalendarView
@@ -427,6 +530,12 @@ export function DailyRankingAdmin({ onDenied }: { onDenied: Denied }) {
             <div>
               <span className="eyebrow">RANKING DIARIO</span>
               <h1>{dateText(day!)}</h1>
+              {standings && (
+                <p className="ranking-admin-prize">
+                  Premio diario: ${standings.prizePool.toLocaleString("es-AR")}{" "}
+                  ARS.
+                </p>
+              )}
               {standings && (
                 <p>
                   {stamp(standings.startsAt)} {time(standings.startsAt)} →{" "}
@@ -478,7 +587,7 @@ export function DailyRankingAdmin({ onDenied }: { onDenied: Denied }) {
             <>
               {standings.items.length ? (
                 <div
-                  className="panel ranking-admin-table"
+                  className="panel ranking-admin-table ranking-admin-standings"
                   tabIndex={0}
                   aria-label="Participantes de la jornada"
                 >
@@ -764,6 +873,6 @@ export function DailyRankingAdmin({ onDenied }: { onDenied: Denied }) {
           )}
         </>
       )}
-    </main>
+    </div>
   );
 }
