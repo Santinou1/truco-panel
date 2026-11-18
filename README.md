@@ -75,7 +75,9 @@ Simulaciones: el panel permite configurar de 0 a 8/16 bots. Se incorporan al pub
 
 ## Ranking diario
 
-La sección **Ranking diario** abre el calendario de jornadas. Elegí una fecha para consultar el ganador o líder, los totales y la clasificación. **Ver partidas** muestra el historial del jugador en esa jornada. Se puede buscar por nombre, correo del rival o ID de partida y filtrar por resultado.
+El ranking administrativo comparte la identidad plata/verde para Freeroll y oro para Reales. Usa iconografía de código, Roboto local licenciado para datos y los títulos del sistema visual; no depende de ilustraciones nuevas sin publicar. El selector, calendario, estadísticas y tablas conservan teclado y diseño desde 320 px.
+
+La sección **Ranking diario** permite elegir **Freeroll · gratis** (solo patacones ficticios, premio diario declarado $20.000 ARS) o **Patacones reales** (solo ARS, premio $50.000 ARS). El calendario, líderes, totales, clasificación, historial y detalle se consultan por moneda. Al cambiar el selector se vuelve al calendario y se reinician los filtros. Elegí una fecha para consultar la jornada; **Ver partidas** abre el historial del jugador y permite buscar por nombre, correo del rival o ID de partida y filtrar por resultado. No acredita premios automáticamente.
 
 El detalle muestra los equipos, el marcador, las horas de inicio y final en Argentina y la duración. En **Manos de la partida** podés abrir cada mano y ver las cartas jugadas en primera, segunda y tercera con las imágenes publicadas del mazo. Cada baza muestra sus cantos, respuestas y puntos. La API comprueba el rol de superadministrador vigente en cada consulta. La prueba conjunta `npm run test:ranking:browser` se ejecuta desde `truco-back`.
 

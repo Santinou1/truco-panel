@@ -479,3 +479,538 @@
     grid-column: 1 / -1;
   }
 }
+/* Ranking: local data typography and shared silver/gold identity. */
+@font-face {
+  font-family: "Ranking Sans";
+  src: url("/fonts/Roboto/Roboto-Regular.ttf") format("truetype");
+  font-display: swap;
+  font-weight: 400;
+}
+@font-face {
+  font-family: "Ranking Sans";
+  src: url("/fonts/Roboto/Roboto-Bold.ttf") format("truetype");
+  font-display: swap;
+  font-weight: 700;
+}
+.ranking-admin {
+  --ranking-line: #c7ded21f;
+  --ranking-accent: #b8ddd0;
+  --ranking-muted: #a5b9ad;
+  --ranking-font: "Ranking Sans", sans-serif;
+  font: 400 14px/1.6 var(--ranking-font);
+  font-variant-numeric: tabular-nums;
+  color: #f0f1e7;
+}
+.ranking-admin[data-currency="ARS"] {
+  --ranking-accent: #e6c17b;
+}
+.ranking-admin .eyebrow {
+  font: 700 10px/1.5 var(--ranking-font);
+  color: var(--ranking-muted);
+  letter-spacing: 0.12em;
+}
+.ranking-admin :is(button, input, select) {
+  font-family: var(--ranking-font);
+  font-size: 13px;
+}
+.ranking-admin :is(input, select) {
+  border-color: var(--ranking-line);
+  border-radius: 8px;
+  background: #0c241b;
+}
+.ranking-admin button:not(.primary) {
+  border-color: var(--ranking-line);
+  border-radius: 8px;
+  background: #1d3529;
+}
+.ranking-admin button.primary {
+  background: #e3c17d;
+  border: 1px solid #e3c17d;
+  box-shadow: none;
+  color: #16271c;
+  font-weight: 700;
+  border-radius: 8px;
+}
+.ranking-admin :is(button, a):focus-visible {
+  outline: 3px solid var(--ranking-accent);
+  outline-offset: 3px;
+}
+.ranking-admin-toolbar {
+  padding: 22px;
+  margin-bottom: 14px;
+  border: 1px solid var(--ranking-line);
+  border-radius: 16px;
+  background: linear-gradient(110deg, #243e30, #142c21 75%);
+}
+.ranking-admin-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+.ranking-admin-title strong {
+  display: block;
+  margin-top: 3px;
+  font: 24px/1.3 var(--font-title);
+}
+.ranking-admin-window {
+  color: var(--ranking-muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+.ranking-admin-choice {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  padding: 5px;
+  border: 1px solid var(--ranking-line);
+  border-radius: 13px;
+  background: #0b2017;
+}
+.ranking-admin .ranking-admin-choice button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  min-width: 0;
+  min-height: 65px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  text-align: left;
+  color: #afc1b4;
+}
+.ranking-admin .ranking-admin-choice button[aria-pressed="true"] {
+  background: #284135;
+  border-color: #b3d2c42e;
+  color: #e0f2e5;
+  box-shadow: 0 3px 8px #0002;
+}
+.ranking-admin .ranking-admin-choice button[data-currency="ARS"][aria-pressed="true"] {
+  background: #403b2a;
+  border-color: #d9b67644;
+  color: #f4d89f;
+}
+.ranking-admin-choice button > span:nth-child(2) {
+  min-width: 0;
+  flex: 1;
+}
+.ranking-admin-choice button strong {
+  display: block;
+  font-size: 14px;
+}
+.ranking-admin-choice button small {
+  display: block;
+  color: #a7b7aa;
+  font: 400 11px/1.5 var(--ranking-font);
+  margin-top: 3px;
+}
+.ranking-admin-coin {
+  width: 31px;
+  height: 31px;
+  flex: none;
+  color: #b6d1c6;
+}
+.ranking-admin-choice [data-currency="ARS"] .ranking-admin-coin {
+  color: #dab875;
+}
+.ranking-admin-coin svg {
+  width: 100%;
+  height: 100%;
+}
+.ranking-admin-check {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-size: 11px;
+  opacity: 0;
+}
+.ranking-admin-choice [aria-pressed="true"] .ranking-admin-check {
+  opacity: 0.8;
+}
+.ranking-admin-scope {
+  color: var(--ranking-muted);
+  font-size: 12px;
+  padding: 0 3px 18px;
+  margin: 0;
+}
+.ranking-admin-scope::before {
+  content: "";
+  display: inline-block;
+  height: 5px;
+  width: 5px;
+  border-radius: 50%;
+  margin-right: 8px;
+  background: var(--ranking-accent);
+  vertical-align: 2px;
+}
+.ranking-admin-heading {
+  margin: 0 0 22px;
+  gap: 24px;
+}
+.ranking-admin-heading h1 {
+  font-size: clamp(24px, 2.8vw, 32px);
+  margin-top: 6px;
+}
+.ranking-admin-heading p {
+  color: var(--ranking-muted);
+  font-size: 12px;
+  margin: 7px 0 0;
+}
+.ranking-admin-heading .ranking-admin-prize {
+  color: var(--ranking-accent);
+  font-weight: 700;
+  font-size: 14px;
+}
+.ranking-admin .panel {
+  border: 1px solid var(--ranking-line);
+  border-radius: 13px;
+  background: #172e22;
+  box-shadow: none;
+}
+.ranking-admin-calendar {
+  gap: 18px;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+}
+.ranking-admin-calendar > section {
+  padding: 22px;
+}
+.ranking-admin-month {
+  margin-bottom: 16px;
+}
+.ranking-admin-month h2 {
+  font: 700 19px var(--ranking-font);
+}
+.ranking-admin-month button {
+  min-width: 34px;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  font-size: 20px;
+}
+.ranking-admin-dates {
+  gap: 7px;
+}
+.ranking-admin-dates > span {
+  color: var(--ranking-muted);
+  font-size: 10px;
+  padding-bottom: 5px;
+}
+.ranking-admin .ranking-admin-dates button {
+  border-color: transparent;
+  font-weight: 400;
+  background: #ffffff03;
+  color: #b7cabc;
+  border-radius: 7px;
+}
+.ranking-admin .ranking-admin-dates button[aria-pressed="true"] {
+  border-color: var(--ranking-accent);
+  background: #b3d7bf1a;
+  color: #f2f7e9;
+  box-shadow: none;
+}
+.ranking-admin .ranking-admin-dates button.open {
+  color: #dcdfb1;
+  background: #b0bb6d12;
+}
+.ranking-admin .ranking-admin-dates button.closed {
+  color: #abc6b1;
+  background: #9ab2a40a;
+}
+.ranking-admin .ranking-admin-dates button.scheduled {
+  color: #5e7c69;
+  opacity: 0.55;
+}
+.ranking-admin-selected {
+  gap: 13px;
+}
+.ranking-admin-selected h2 {
+  font: 700 23px/1.3 var(--ranking-font);
+}
+.ranking-admin-tag {
+  padding: 4px 9px;
+  font: 400 10px/1.4 var(--ranking-font);
+  border-color: var(--ranking-line);
+  color: #b9cbbd;
+}
+.ranking-admin-tag.open,
+.ranking-admin-tag.win {
+  color: #badfc2;
+  border-color: #9abf9d24;
+  background: #7eac7914;
+}
+.ranking-admin-tag.loss {
+  color: #e4ac9c;
+  border-color: #c58f7e22;
+  background: #c58f7e0d;
+}
+.ranking-admin-tag.settling {
+  color: #e1c58e;
+  background: #d3ae6d0d;
+}
+.ranking-admin-leader.panel {
+  padding: 15px;
+  border-color: var(--ranking-line);
+  background: #23392b;
+}
+.ranking-admin-leader .ranking-admin-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #f0efdf;
+}
+.ranking-admin-leader > strong {
+  color: var(--ranking-accent);
+  font-size: 24px;
+}
+.ranking-admin-leader small {
+  font: 400 11px var(--ranking-font);
+  color: var(--ranking-muted);
+  margin-top: 5px;
+}
+.ranking-admin-stat,
+.ranking-admin-times > div {
+  border-color: var(--ranking-line);
+  border-radius: 10px;
+  background: #142b20;
+  padding: 14px 16px;
+}
+.ranking-admin-stat .eyebrow,
+.ranking-admin-times .eyebrow {
+  font-size: 9px;
+  letter-spacing: 0.06em;
+}
+.ranking-admin-stat strong,
+.ranking-admin-times strong {
+  display: block;
+  font: 700 29px/1.2 var(--ranking-font);
+  color: #e7eee2;
+  margin-top: 6px;
+}
+.ranking-admin-summary {
+  margin-bottom: 20px;
+  gap: 12px;
+}
+.ranking-admin-player-stats {
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.ranking-admin-filter {
+  gap: 12px;
+  margin: 16px 0 15px;
+}
+.ranking-admin-filter label {
+  color: #a9bcae;
+  font-size: 11px;
+  gap: 7px;
+}
+.ranking-admin-avatar {
+  border-color: #b3cbbb38;
+  width: 34px;
+  height: 34px;
+}
+.ranking-admin-name {
+  gap: 10px;
+}
+.ranking-admin-table :is(td, th) {
+  padding: 14px 15px;
+  border-color: var(--ranking-line);
+  font-weight: 400;
+  font-size: 13px;
+}
+.ranking-admin-table thead {
+  color: var(--ranking-muted);
+  background: #10261b;
+}
+.ranking-admin-table thead th {
+  font: 400 11px var(--ranking-font);
+}
+.ranking-admin-table tbody tr:hover {
+  background: #ffffff03;
+}
+.ranking-admin-table tbody tr:last-child :is(td, th) {
+  border-bottom: 0;
+}
+.ranking-admin .text-button {
+  background: transparent;
+  border: 0;
+  font-size: 12px;
+  color: var(--ranking-accent);
+  padding: 0;
+}
+.ranking-admin-table small {
+  color: var(--ranking-muted);
+  font: 400 10px var(--ranking-font);
+}
+.ranking-admin-versus {
+  gap: 16px;
+  padding: 18px;
+}
+.ranking-admin-versus > section {
+  border: 1px solid var(--ranking-line);
+  border-radius: 10px;
+  background: #10271c;
+  padding: 18px;
+}
+.ranking-admin-versus > section.winner {
+  background: #b1c4830a;
+  border-color: #c4bd7840;
+}
+.ranking-admin-versus strong {
+  font-family: var(--ranking-font);
+}
+.ranking-admin-notice {
+  color: #afc3b4;
+  font-size: 12px;
+}
+.ranking-admin-hand-title > strong {
+  font-family: var(--ranking-font);
+}
+@media (max-width: 720px) {
+  .ranking-admin-calendar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ranking-admin-heading {
+    gap: 12px;
+  }
+  .ranking-admin-toolbar {
+    padding: 18px;
+  }
+  .ranking-admin-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ranking-admin-summary > .ranking-admin-leader {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 540px) {
+  .ranking-admin-toolbar {
+    padding: 14px;
+    border-radius: 13px;
+  }
+  .ranking-admin-title {
+    gap: 10px;
+    margin-bottom: 14px;
+    align-items: start;
+  }
+  .ranking-admin-title strong {
+    font-size: 20px;
+  }
+  .ranking-admin-title .eyebrow {
+    font-size: 8px;
+  }
+  .ranking-admin-window {
+    max-width: 80px;
+    white-space: normal;
+    text-align: right;
+    font-size: 9px;
+  }
+  .ranking-admin-choice {
+    padding: 4px;
+    gap: 4px;
+  }
+  .ranking-admin .ranking-admin-choice button {
+    padding: 9px 6px;
+    gap: 6px;
+    min-height: 58px;
+  }
+  .ranking-admin-choice button strong {
+    font-size: 11px;
+    line-height: 1.4;
+  }
+  .ranking-admin-choice button small,
+  .ranking-admin-check {
+    display: none;
+  }
+  .ranking-admin-coin {
+    width: 22px;
+    height: 22px;
+  }
+  .ranking-admin-scope {
+    font-size: 11px;
+    line-height: 1.6;
+    padding-bottom: 16px;
+  }
+  .ranking-admin-heading h1 {
+    font-size: 25px;
+  }
+  .ranking-admin-heading {
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+  .ranking-admin-heading button {
+    font-size: 11px;
+    padding: 9px 11px;
+  }
+  .ranking-admin-calendar > section {
+    padding: 16px;
+  }
+  .ranking-admin-month h2 {
+    font-size: 17px;
+  }
+  .ranking-admin-month button {
+    min-width: 28px;
+    width: 28px;
+    height: 28px;
+  }
+  .ranking-admin-dates {
+    gap: 4px;
+  }
+  .ranking-admin-selected h2 {
+    font-size: 21px;
+  }
+  .ranking-admin-stat,
+  .ranking-admin-times > div {
+    padding: 12px;
+  }
+  .ranking-admin-stat strong {
+    font-size: 25px;
+  }
+  .ranking-admin-table :is(td, th) {
+    padding: 12px 9px;
+    font-size: 12px;
+  }
+  .ranking-admin .ranking-admin-standings table {
+    min-width: 0;
+    table-layout: fixed;
+  }
+  .ranking-admin-standings tbody th {
+    min-width: 0;
+  }
+  .ranking-admin-standings :is(td, th) {
+    padding-inline: 7px;
+  }
+  .ranking-admin-standings tr > :nth-child(n + 3):nth-child(-n + 5) {
+    display: none;
+  }
+  .ranking-admin-standings thead th:first-child {
+    width: 50px;
+  }
+  .ranking-admin-standings thead th:nth-child(6) {
+    width: 50px;
+  }
+  .ranking-admin-standings thead th:last-child {
+    width: 84px;
+  }
+  .ranking-admin-standings .ranking-admin-avatar {
+    display: none;
+  }
+  .ranking-admin .ranking-admin-standings button.text-button {
+    font-size: 11px;
+    background: transparent;
+  }
+  .ranking-admin-filter {
+    flex-wrap: wrap;
+  }
+  .ranking-admin-filter label:first-child {
+    flex-basis: 100%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ranking-admin button {
+    transition: none;
+  }
+}
