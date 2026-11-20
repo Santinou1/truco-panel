@@ -1,4 +1,5 @@
 import { TournamentAdmin } from "./components/TournamentAdmin";
+import { AssignedMatchesAdmin } from "./components/AssignedMatchesAdmin";
 import { DailyRankingAdmin } from "./components/DailyRankingAdmin";
 import { LobbyActivityAdmin } from "./components/LobbyActivityAdmin";
 import { FiatGamesAdmin } from "./components/FiatGamesAdmin";
@@ -14,7 +15,7 @@ import type { User } from "./types";
 
 export function App() {
   const [section, setSection] = useState<
-    "catalog" | "tournaments" | "ranking" | "lobby" | "fiat-games" | "fiat-transfers" | "referrals" | "support"
+    "catalog" | "tournaments" | "assigned-matches" | "ranking" | "lobby" | "fiat-games" | "fiat-transfers" | "referrals" | "support"
   >("catalog");
   const [user, setUser] = useState<User | null>(null);
   const [booting, setBooting] = useState(true);
@@ -122,6 +123,12 @@ export function App() {
                   onClick={() => setSection("tournaments")}
                 >
                   ♠ Torneos
+                </button>
+                <button
+                  aria-current={section === "assigned-matches" ? "page" : undefined}
+                  onClick={() => setSection("assigned-matches")}
+                >
+                  Partidas por usuario
                 </button>
                 <button
                   aria-current={section === "ranking" ? "page" : undefined}
@@ -237,6 +244,8 @@ export function App() {
           ) : user.role === "super_admin" ? (
             section === "ranking" ? (
               <DailyRankingAdmin key={user.id} onDenied={denied} />
+            ) : section === "assigned-matches" ? (
+              <AssignedMatchesAdmin key={user.id} gameUrl={gameUrl} onDenied={denied} />
             ) : section === "lobby" ? (
               <LobbyActivityAdmin key={user.id} onDenied={denied} />
             ) : section === "fiat-games" ? (

@@ -70,6 +70,7 @@ export async function createTestTransfers() {
     `, [deposit, credited, providerReference, randomUUID(), review, String(randomInt(1000000000, 1000000000000))]);
     await tx.query("INSERT INTO economy_fiat.journal_entries(deposit_id,user_id,amount_minor) VALUES($1,$2,48675)",
       [deposit, userId]);
+    await tx.query('UPDATE economy_fiat.deposit_transactions SET cresium_fee_minor=1325 WHERE order_id=$1',[review]);
     await tx.query(`
       INSERT INTO economy_fiat.cresium_audit(id,order_id,company_id,operation,outcome,http_status,response_ciphertext)
       VALUES($1,$2,'77','create_order','provider_error',500,'private-fixture')
@@ -97,7 +98,7 @@ export async function createTestTransfers() {
       FROM generate_series(1,50) AS n
     `, [rejected]);
   });
-  return { email, userId, credited, issuanceError, rejected, providerReference };
+  return { email, userId, credited, review, issuanceError, rejected, providerReference };
 }
 
 // Only this isolated browser-test database is used; never creates a production admin.
