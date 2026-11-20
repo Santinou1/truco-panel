@@ -45,6 +45,10 @@ Los indicadores se calculan del catálogo real. Los saldos e inventarios no se m
 
 Al agregar diseños o cambiar imágenes publicadas, actualizar las URLs en `src/asset-manifest.json` y el catálogo en `src/catalog.json`; si cambia la moneda, actualizar también el favicon en `index.html`. Verificar primero que cada URL exista en el sitio publicado. Las imágenes requieren conexión con `lapulperia.cloud`; las URLs con hash deben seguir disponibles mientras estén referenciadas por el panel.
 
+## Partidas por usuario
+
+En **Partidas por usuario**, buscá y elegí dos cuentas verificadas distintas. Cargá los puntos que suma el ganador y los que se descuentan al perdedor en el ranking diario de patacones ficticios. El formulario admite enteros entre 0 y 1000. Copiá el enlace y compartilo con ambos jugadores. La mesa es gratuita, a 30 puntos y sin flor. Tienen 24 horas para iniciarla.
+
 ## Auditoría de transferencias
 
 Buscá cargas y retiros por nombre, usuario, correo o referencia desde **Auditoría de transferencias**. Filtrá por tipo, estado o errores y abrí **Ver detalle** para revisar importes y actividad de Cresium. En las cargas, **Bruto recibido** muestra las transferencias registradas y **Neto acreditado** el importe asentado en el saldo. En los retiros, el detalle muestra si falta aprobación y confirma el neto cuando se registra el pago. Disponible para la cuenta superadministradora.
