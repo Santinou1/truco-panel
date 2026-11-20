@@ -1,4 +1,4 @@
-import { useId, useRef, useState, type FormEvent } from "react";
+import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { api, ApiError, message } from "../api";
 import "./assigned-matches-admin.css";
 
@@ -9,6 +9,10 @@ type Player = {
   email: string;
 };
 type PlayerResults = { items: Player[]; hasMore: boolean };
+type PlayerLookup = { query: string } & (
+  | { results: PlayerResults; error?: never }
+  | { error: string; results?: never }
+);
 type Invitation = { path: string; expiresAt: string };
 type Denied = (status: 401 | 403) => void;
 const endpoint = "/admin/assigned-matches";
@@ -49,58 +53,87 @@ function PlayerPicker({
   onDenied: Denied;
 }) {
   const inputId = useId();
+  const resultsId = useId();
   const input = useRef<HTMLInputElement>(null);
+  const suggestions = useRef<HTMLUListElement>(null);
   const [search, setSearch] = useState("");
-  const [results, setResults] = useState<PlayerResults | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [lookup, setLookup] = useState<PlayerLookup | null>(null);
+  const [attempt, setAttempt] = useState(0);
+  const query = search.trim();
+  const shouldSearch = !player && !disabled && query.length >= 2;
+  const current = shouldSearch && lookup?.query === query ? lookup : null;
+  const results = current?.results;
 
-  async function find(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (search.trim().length < 2 || loading || disabled) return;
-    setLoading(true);
-    setResults(null);
-    setError("");
-    try {
-      setResults(
-        await api<PlayerResults>(endpoint + "/players/search", {
-          search: search.trim(),
-        }),
-      );
-    } catch (cause) {
-      reportError(cause, onDenied, setError);
-    } finally {
-      setLoading(false);
-    }
-  }
+  useEffect(() => {
+    if (!shouldSearch) return;
+    let active = true;
+    const timer = window.setTimeout(async () => {
+      try {
+        const results = await api<PlayerResults>(endpoint + "/players/search", {
+          search: query,
+        });
+        if (active) setLookup({ query, results });
+      } catch (cause) {
+        if (active)
+          reportError(cause, onDenied, (error) => setLookup({ query, error }));
+      }
+    }, 250);
+    return () => {
+      active = false;
+      window.clearTimeout(timer);
+    };
+  }, [shouldSearch, query, attempt, onDenied]);
 
   return (
-    <form className="assigned-player" onSubmit={find} aria-busy={loading}>
+    <div className="assigned-player">
       <label htmlFor={inputId}>{label}</label>
-      <div className="assigned-inline">
-        <input
-          id={inputId}
-          ref={input}
-          value={search}
-          onChange={(event) => {
-            setSearch(event.target.value);
-            setResults(null);
-            if (player) onSelect(null);
-          }}
-          type="search"
-          maxLength={254}
-          placeholder="Nombre, usuario o correo"
-          autoComplete="off"
-          disabled={loading || disabled}
-        />
-        <button
-          className="secondary"
-          disabled={loading || disabled || search.trim().length < 2}
-        >
-          {loading ? "Buscando…" : "Buscar"}
-        </button>
-      </div>
-      {error && <p role="alert">{error}</p>}
+      <input
+        id={inputId}
+        ref={input}
+        value={search}
+        onChange={(event) => {
+          const next = event.target.value;
+          if (next.trim() !== query) setLookup(null);
+          setSearch(next);
+          if (player) onSelect(null);
+        }}
+        onKeyDown={(event) => {
+          if (event.key !== "ArrowDown") return;
+          const first = suggestions.current?.querySelector<HTMLButtonElement>(
+            "button:not(:disabled)",
+          );
+          if (!first) return;
+          event.preventDefault();
+          first.focus();
+        }}
+        type="search"
+        maxLength={254}
+        placeholder="Nombre, usuario o correo completo"
+        autoComplete="off"
+        aria-controls={results?.items.length ? resultsId : undefined}
+        disabled={disabled}
+      />
+      {shouldSearch && !current && (
+        <p className="muted" role="status">
+          Buscando…
+        </p>
+      )}
+      {current?.error && (
+        <>
+          <p role="alert">{current.error}</p>
+          <button
+            type="button"
+            className="secondary"
+            onClick={() => {
+              setLookup(null);
+              setAttempt((value) => value + 1);
+              input.current?.focus();
+            }}
+          >
+            Reintentar búsqueda
+          </button>
+        </>
+      )}
       {player && (
         <p role="status">
           <strong>{player.displayName}</strong> · {player.email}
@@ -116,7 +149,12 @@ function PlayerPicker({
               : "No encontramos cuentas verificadas con esa búsqueda."}
           </p>
           {!!results.items.length && (
-            <ul className="assigned-results">
+            <ul
+              id={resultsId}
+              ref={suggestions}
+              className="assigned-results"
+              aria-label={`Sugerencias para ${label.toLowerCase()}`}
+            >
               {results.items.map((item) => (
                 <li key={item.id}>
                   <button
@@ -128,7 +166,7 @@ function PlayerPicker({
                       setSearch(
                         item.username ? "@" + item.username : item.email,
                       );
-                      setResults(null);
+                      setLookup(null);
                       input.current?.focus();
                     }}
                   >
@@ -147,7 +185,7 @@ function PlayerPicker({
           )}
         </>
       )}
-    </form>
+    </div>
   );
 }
 

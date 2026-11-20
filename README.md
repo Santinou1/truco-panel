@@ -47,7 +47,7 @@ Al agregar diseños o cambiar imágenes publicadas, actualizar las URLs en `src/
 
 ## Partidas por usuario
 
-En **Partidas por usuario**, buscá y elegí dos cuentas verificadas distintas. Cargá los puntos que suma el ganador y los que se descuentan al perdedor en el ranking diario de patacones ficticios. El formulario admite enteros entre 0 y 1000. Copiá el enlace y compartilo con ambos jugadores. La mesa es gratuita, a 30 puntos y sin flor. Tienen 24 horas para iniciarla.
+En **Partidas por usuario**, escribí parte del nombre o del usuario, o el correo completo. Elegí dos cuentas verificadas distintas de las sugerencias que aparecen al escribir. Cargá los puntos que suma el ganador y los que se descuentan al perdedor en el ranking diario de patacones ficticios. El formulario admite enteros entre 0 y 1000. Copiá el enlace y compartilo con ambos jugadores. La mesa es gratuita, a 30 puntos y sin flor. Tienen 24 horas para iniciarla.
 
 ## Auditoría de transferencias
 

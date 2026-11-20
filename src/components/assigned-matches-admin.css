@@ -47,7 +47,13 @@
 .assigned-results {
   display: grid;
   gap: 6px;
-  padding: 0;
+  max-height: min(18rem, 45vh);
+  overflow-y: auto;
+  margin: 0;
+  padding: 8px;
+  border: 1px solid #d6b47045;
+  border-radius: 8px;
+  background: #14271f;
   list-style: none;
 }
 
