@@ -13,6 +13,7 @@ type Transfer = {
   amountMinor: string;
   receivedMinor: string | null;
   settledMinor: string | null;
+  pendingCreditMinor: string | null;
   netMinor: string | null;
   attempts: number | null;
   requestId: string;
@@ -26,13 +27,15 @@ type EventData =
       providerTransactionId: string; grossMinor: string; netMinor: string; reviewReason: string | null;
     } }
   | { kind: "credit"; data: { amountMinor: string; providerTransactionId: string; coversCresiumFee?: boolean } }
+  | { kind: "admin_credit"; data: { adminId: string; reason: string; previousReviewReason: string } }
   | { kind: "withdrawal_status"; data: { status: string } }
   | { kind: "provider"; data: {
       operation: string; outcome: string; httpStatus: number | null; providerTransactionId: string | null;
     } };
 type AuditEvent = EventData & { id: string; occurredAt: string | null };
 type TransferPage = { items: Transfer[]; hasMore: boolean };
-type DetailPage = { transfer: Transfer; events: AuditEvent[]; hasMore: boolean };
+type PendingCredit = { id: string; providerTransactionId: string; netMinor: string; creditMinor: string; reviewReason: string };
+type DetailPage = { transfer: Transfer; events: AuditEvent[]; pendingCredits: PendingCredit[]; hasMore: boolean };
 type DeniedHandler = (status: 401 | 403) => void;
 
 const endpoint = "/admin/fiat-transfers";
@@ -165,6 +168,10 @@ function AuditEventItem({ event }: { event: AuditEvent }) {
       description = pesos(event.data.amountMinor);
       reference = event.data.providerTransactionId;
       break;
+    case "admin_credit":
+      title = "Aprobación administrativa";
+      description = `${event.data.reason} · Administrador ${event.data.adminId} · Revisión anterior: ${reviewReasons[event.data.previousReviewReason] ?? event.data.previousReviewReason}`;
+      break;
     case "withdrawal_status":
       title = labels[event.data.status] ?? event.data.status;
       break;
@@ -185,8 +192,55 @@ function AuditEventItem({ event }: { event: AuditEvent }) {
   </li>;
 }
 
-function TransferDetails({ selected, onDenied }: { selected: Transfer; onDenied: DeniedHandler }) {
+function DepositCreditForm({ transfer, pending, onDenied, onCredited }: {
+  transfer: Transfer; pending: PendingCredit; onDenied: DeniedHandler;
+  onCredited: (notice: string) => void;
+}) {
+  const [reason, setReason] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const submitting = useRef(false);
+  return <form className="transfer-credit" aria-label={`Acreditar movimiento ${pending.providerTransactionId}`}
+    onSubmit={async event => {
+      event.preventDefault();
+      if (submitting.current) return;
+      submitting.current = true;
+      setBusy(true);
+      setError("");
+      try {
+        const result = await api<{ creditedMinor: string; alreadyCredited: boolean }>(
+          `${endpoint}/deposit/${transfer.id}/credit`,
+          { depositId: pending.id, expectedNetMinor: pending.netMinor, expectedCreditMinor: pending.creditMinor, reason: reason.trim() },
+        );
+        onCredited(`${result.alreadyCredited ? "La transferencia ya estaba acreditada" : "Acreditación confirmada"}: ${pesos(result.creditedMinor)} en el saldo de ${transfer.user.displayName}.`);
+      } catch (cause: unknown) {
+        if (cause instanceof ApiError && (cause.status === 401 || cause.status === 403)) onDenied(cause.status);
+        else setError(message(cause));
+      } finally {
+        submitting.current = false;
+        setBusy(false);
+      }
+    }}>
+    <p><strong>Confirmar acreditación de {pesos(pending.creditMinor)}</strong> a {transfer.user.displayName}</p>
+    {pending.creditMinor !== pending.netMinor && <p className="muted">Neto recibido {pesos(pending.netMinor)} + cobertura de comisión Cresium {pesos((BigInt(pending.creditMinor)-BigInt(pending.netMinor)).toString())}.</p>}
+    <p className="muted">Transacción Cresium {pending.providerTransactionId} · {reviewReasons[pending.reviewReason] ?? pending.reviewReason}.</p>
+    <p>Al confirmar, aprobás la revisión y el importe indicado se suma inmediatamente al saldo del jugador.</p>
+    <label>Motivo de la acreditación
+      <textarea required minLength={5} maxLength={500} rows={2} value={reason} disabled={busy}
+        onChange={event => setReason(event.target.value)} placeholder="Indicá la comprobación realizada" />
+    </label>
+    {error && <p role="alert">{error}</p>}
+    <button type="submit" className="primary" disabled={busy || reason.trim().length < 5}>
+      {busy ? "Acreditando…" : `Acreditar ${pesos(pending.creditMinor)}`}
+    </button>
+  </form>;
+}
+
+function TransferDetails({ selected, onDenied, onCredited }: {
+  selected: Transfer; onDenied: DeniedHandler; onCredited: () => void;
+}) {
   const [offset, setOffset] = useState(0);
+  const [notice, setNotice] = useState("");
   const { data, error, loading, refresh } = useAuditPage<DetailPage>(
     `${endpoint}/${selected.kind}/${selected.id}?offset=${offset}`, onDenied,
   );
@@ -211,6 +265,14 @@ function TransferDetails({ selected, onDenied }: { selected: Transfer; onDenied:
         {transfer.netMinor !== null && transfer.settledMinor === null &&
           <div><dt>Neto previsto</dt><dd>{pesos(transfer.netMinor)}</dd></div>}
       </dl>
+      {notice && <p role="status">{notice}</p>}
+      {!loading && !error && data?.pendingCredits.map(pending => <DepositCreditForm key={pending.id}
+        transfer={transfer} pending={pending} onDenied={onDenied} onCredited={result => {
+          setNotice(result);
+          setOffset(0);
+          refresh();
+          onCredited();
+        }} />)}
       <dl className="transfer-references">
         <div><dt>Inicio</dt><dd><DateTime value={transfer.createdAt} /></dd></div>
         {transfer.expiresAt && <div><dt>Vencimiento</dt><dd><DateTime value={transfer.expiresAt} /></dd></div>}
@@ -267,7 +329,7 @@ export function FiatTransfersAdmin({ onDenied }: { onDenied: DeniedHandler }) {
     </header>
     {selected ? <>
       <div><button type="button" className="secondary" onClick={() => setSelected(null)}>← Volver a transferencias</button></div>
-      <TransferDetails selected={selected} onDenied={onDenied} />
+      <TransferDetails key={selected.id} selected={selected} onDenied={onDenied} onCredited={refresh} />
     </> : <section className="panel transfer-panel" aria-label="Consulta de transferencias">
       <form className="transfer-filters" onSubmit={event => {
         event.preventDefault();
@@ -319,7 +381,7 @@ export function FiatTransfersAdmin({ onDenied }: { onDenied: DeniedHandler }) {
               <thead><tr>
                 <th scope="col">Cuenta</th><th scope="col">Operación</th>
                 <th scope="col">Solicitado</th><th scope="col">Neto aplicado</th>
-                <th scope="col">Estado</th><th scope="col">Detalle</th>
+                <th scope="col">Estado</th><th scope="col">Acciones</th>
               </tr></thead>
               <tbody>
                 {data.items.map(transfer => <tr key={`${transfer.kind}-${transfer.id}`}>
@@ -331,10 +393,16 @@ export function FiatTransfersAdmin({ onDenied }: { onDenied: DeniedHandler }) {
                   <td>{pesos(transfer.amountMinor)}</td>
                   <td>{transfer.settledMinor !== null ? pesos(transfer.settledMinor) : "—"}</td>
                   <td><TransferStatus status={transfer.status} /></td>
-                  <td><button type="button" className="secondary" onClick={() => setSelected(transfer)}
+                  <td><div className="transfer-actions"><button type="button" className="secondary" onClick={() => setSelected(transfer)}
                     aria-label={`Ver detalle de ${kindLabel[transfer.kind].toLowerCase()} de ${transfer.user.displayName}, ${pesos(transfer.amountMinor)}, ${dates.format(new Date(transfer.createdAt))}`}>
                     Ver detalle
-                  </button></td>
+                  </button>
+                    {transfer.kind === "deposit" && BigInt(transfer.pendingCreditMinor ?? "0") > 0n &&
+                      <button type="button" className="primary" onClick={() => setSelected(transfer)}
+                        aria-label={`Acreditar carga de ${transfer.user.displayName}`}>
+                        Acreditar
+                      </button>}
+                  </div></td>
                 </tr>)}
               </tbody>
             </table>

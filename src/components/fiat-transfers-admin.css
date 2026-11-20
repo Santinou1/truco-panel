@@ -2,6 +2,37 @@
   display: grid;
   gap: 18px;
 }
+.transfer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.transfer-credit {
+  margin-top: 20px;
+  padding: 16px;
+  border: 1px solid #d6b47080;
+  border-radius: 8px;
+  background: #132820;
+  overflow-wrap: anywhere;
+}
+.transfer-credit textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  padding: 10px;
+  font: inherit;
+  color: inherit;
+  background: #10241e;
+  border: 1px solid #d6b47080;
+  border-radius: 6px;
+  resize: vertical;
+}
+.transfer-credit button {
+  margin-top: 12px;
+  max-width: 100%;
+  white-space: normal;
+}
 .transfer-admin h1,
 .transfer-admin h2 {
   margin: 0;

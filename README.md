@@ -88,3 +88,5 @@ El juego en `development` incorpora **Guardar usuario** y alertas compactas cerr
 El [informe y las nueve capturas del juego](https://github.com/Santinou1/truco-front/releases/tag/testing-2026-11-08-guardar-usuario-alertas) se adjuntan fuera de Git. Destino del panel: [testingpanel.lapulperia.cloud](https://testingpanel.lapulperia.cloud), publicado por el workflow de `development` después del backend.
 
 Verificación local de esta integración: `npm test` (4 pruebas), `npm run build` y `npm run test:browser` aprobados. La suite de navegador usa API/PostgreSQL reales y OTP simulado; comprueba borradores, reintentos, permisos, sesión y pantallas desde 320 px.
+
+Las cargas recibidas y retenidas por revisión de origen tienen **Acreditar**. En el detalle, revisá cuenta, referencia e importe total (neto más la cobertura de Cresium informada), escribí el motivo y confirmá. El saldo se acredita inmediatamente al confirmar la API y queda registrado el administrador, motivo y fecha en el historial. Los reintentos no duplican el crédito. Una orden sin movimiento recibido o con neto cero no permite acreditar; los retiros mantienen su circuito propio.
