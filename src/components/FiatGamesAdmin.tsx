@@ -10,7 +10,7 @@ type Terms = {
   commissionBps: number;
   minEntryMinor: number;
   version: number;
-  scoring: { fictitious: Points; tiers: Tier[]; scoreForfeits: boolean };
+  scoring: { fictitious: Points; tiers: Tier[] };
 };
 type DraftPoints = { win: string; loss: string };
 type Draft = {
@@ -19,7 +19,6 @@ type Draft = {
   minimum: string;
   fictitious: DraftPoints;
   tiers: (DraftPoints & { from: string })[];
-  scoreForfeits: boolean;
 };
 const endpoint = "/admin/fiat-games";
 const decimal = (scaled: number) => (scaled / 100).toLocaleString("es-AR", { useGrouping: false });
@@ -31,7 +30,6 @@ function toDraft(value: Terms): Draft {
     minimum: decimal(value.minEntryMinor),
     fictitious: asPoints(value.scoring.fictitious),
     tiers: value.scoring.tiers.map((tier) => ({ ...asPoints(tier), from: decimal(tier.minEntryMinor) })),
-    scoreForfeits: value.scoring.scoreForfeits,
   };
 }
 
@@ -122,7 +120,6 @@ export function FiatGamesAdmin({ onDenied }: { onDenied: (status: 401 | 403) => 
         scoring: {
           fictitious: { win: Number(draft.fictitious.win), loss: Number(draft.fictitious.loss) },
           tiers,
-          scoreForfeits: draft.scoreForfeits,
         },
       });
       setTerms(value);
@@ -166,6 +163,7 @@ export function FiatGamesAdmin({ onDenied }: { onDenied: (status: 401 | 403) => 
             <fieldset disabled={busy} className="fiat-admin-config">
               <legend>Puntos del ranking diario y del ELO</legend>
               <p className="muted">Se fijan al iniciar la partida. En derrota ingresá cuántos puntos se descuentan.</p>
+              <p className="muted">Si hay un ganador por abandono o desconexión, se aplican los puntos de victoria y derrota.</p>
               <h2>Patacones ficticios</h2>
               <div className="fiat-admin-row">
                 <PointsFields label="Ficticios" value={draft.fictitious}
@@ -186,11 +184,6 @@ export function FiatGamesAdmin({ onDenied }: { onDenied: (status: 401 | 403) => 
                       i === index ? { ...row, ...points } : row) })} />
                 </div>
               ))}
-              <label>
-                <input type="checkbox" checked={draft.scoreForfeits}
-                  onChange={(event) => setDraft({ ...draft, scoreForfeits: event.target.checked })} />
-                {" "}Dar puntos cuando hay un ganador por abandono o desconexión
-              </label>
             </fieldset>
             <div className="lobby-activity-actions">
               <label>
