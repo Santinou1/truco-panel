@@ -15,6 +15,11 @@ export interface TournamentSummary {
   target: 15 | 30;
   flor: boolean;
   prize: number;
+  entryFee: number;
+  entryCurrency: "PLAY_CHIP" | "ARS";
+  paymentMode: "manual" | "wallet";
+  winnerPrize: number;
+  commission: number;
   banner: "ancho" | "envido";
   enrolled: number;
   confirmed: number;
@@ -63,8 +68,13 @@ export const pesos = (amount: number) =>
   new Intl.NumberFormat("es-AR", {
     style: "currency",
     currency: "ARS",
-    maximumFractionDigits: 0,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
   }).format(amount);
+export const tournamentEntry = (t: Pick<TournamentSummary, "entryFee" | "entryCurrency">) =>
+  !t.entryFee ? "Entrada gratis" : t.entryCurrency === "ARS"
+    ? `${pesos(t.entryFee / 100)} en patacones reales`
+    : `${t.entryFee.toLocaleString("es-AR")} patacones ficticios`;
 export const tournamentDate = (value: string | null, capacity: 8 | 16 = 16) =>
   value
     ? new Date(value).toLocaleString("es-AR", {
