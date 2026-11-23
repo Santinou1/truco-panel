@@ -208,6 +208,16 @@ export async function verifyAdmin(browser, base) {
     const savedTrial = await (await context.request.get(internal)).json();
     assert.equal(savedTrial.profiles[0].name,temporaryName);
     assert.ok(savedTrial.invites.includes("taller@example.test"));
+    // Display-only fixture for a winner with a $501 stake and a $901.80 payout.
+    await page.route(internal, route => route.fulfill({ json: {
+      ...savedTrial, profiles: savedTrial.profiles.map((profile, i) =>
+        i === 0 ? {...profile, available:100400.80, net:"400.80"} : profile),
+    } }));
+    await page.getByRole("button", {name:"Actualizar resultados"}).click();
+    const winnerRow = page.getByRole("row").filter({hasText:temporaryName});
+    await expect(winnerRow.locator("td").nth(0)).toContainText("100.400,80");
+    await expect(winnerRow.locator("td").nth(2)).toContainText("400,80");
+    await page.unroute(internal);
     await page.setViewportSize({width:320,height:850});
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth<=innerWidth));
     await invites.fill(trial.invites.join("\n"));

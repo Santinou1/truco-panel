@@ -15,7 +15,7 @@ type Draft = Options & {
   version: number; fees: string; botWait: string; humanWait: string; emails: string; profiles: Identity[];
 };
 const endpoint = "/admin/internal-trial";
-const money = new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 0 });
+const money = new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 2 });
 const flags: [keyof Options, string][] = [
   ["enabled", "Activar la prueba interna"],
   ["autoOpen", "Mantener una mesa de perfiles internos disponible"],
@@ -102,7 +102,7 @@ export function InternalTrialAdmin({ onDenied }: { onDenied: (status: 401 | 403)
             <thead><tr>{["Perfil", "Disponible", "En juego", "Resultado neto", "Partidas", "Ganadas", "Perdidas", "Puntos de hoy"].map(cell => <th key={cell} scope="col">{cell}</th>)}</tr></thead>
             <tbody>{status.profiles.map(p => <tr key={p.slot}>
               <th scope="row">{p.name}</th><td>{money.format(p.available)}</td><td>{money.format(p.reserved)}</td>
-              <td>{money.format(BigInt(p.net))}</td><td>{p.played}</td><td>{p.won}</td><td>{p.lost}</td><td>{p.pointsToday}</td>
+              <td>{money.format(Number(p.net))}</td><td>{p.played}</td><td>{p.won}</td><td>{p.lost}</td><td>{p.pointsToday}</td>
             </tr>)}</tbody>
           </table>
         </div>
