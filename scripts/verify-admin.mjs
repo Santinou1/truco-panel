@@ -160,6 +160,7 @@ export async function verifyAdmin(browser, base) {
   try {
     await page.goto(base + "/");
     assert.equal((await context.request.post(base + "/api/admin/fiat-transfers/search", { headers, data: {} })).status(), 401);
+    assert.equal((await context.request.get(base + "/api/admin/internal-trial")).status(), 401);
     await expect(page.getByLabel("Email", { exact: true })).toBeVisible();
     await expect(page).toHaveURL(base + "/");
     await expect(
@@ -189,6 +190,32 @@ export async function verifyAdmin(browser, base) {
     await expect(
       page.getByRole("button", { name: "Catálogo y precios", exact: false }),
     ).toBeVisible();
+    await page.getByRole("button", {name:"Prueba interna", exact:true}).click();
+    const internal = base + "/api/admin/internal-trial";
+    const trial = await (await context.request.get(internal)).json();
+    assert.equal(trial.profiles.length,10);
+    const invites = page.getByLabel("Correos invitados, uno por línea");
+    await expect(invites).toHaveValue(trial.invites.join("\n"));
+    const profileName = page.getByLabel("Nombre del perfil 1", {exact:true});
+    const temporaryName = "Perfil de prueba UI";
+    await profileName.fill(temporaryName);
+    await page.getByRole("button", {name:"Actualizar resultados"}).click();
+    await expect(page.getByText("Resultados actualizados.", {exact:true})).toBeVisible();
+    await expect(profileName).toHaveValue(temporaryName);
+    await invites.fill([...trial.invites,"taller@example.test"].join("\n"));
+    await page.getByRole("button", {name:"Guardar configuración"}).click();
+    await expect(page.getByText("Configuración guardada.", {exact:true})).toBeVisible();
+    const savedTrial = await (await context.request.get(internal)).json();
+    assert.equal(savedTrial.profiles[0].name,temporaryName);
+    assert.ok(savedTrial.invites.includes("taller@example.test"));
+    await page.setViewportSize({width:320,height:850});
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth<=innerWidth));
+    await invites.fill(trial.invites.join("\n"));
+    await profileName.fill(trial.profiles[0].name);
+    await Promise.all([page.waitForResponse(r=>r.url()===internal && r.request().method()==="POST" && r.ok()),
+      page.getByRole("button", {name:"Guardar configuración"}).click()]);
+    await page.setViewportSize({width:1440,height:1000});
+    report.checks.push("Prueba interna: diez saldos, edición de perfil e invitados, borradores y vista de 320 px");
     const audit = await verifyFiatTransferAudit(page, base, headers, dir);
     report.checks.push("Auditoría: búsqueda, paginación, importes, cargas en revisión, aprobación, errores y móvil");
     const activity = () => page.getByRole("button", { name: "Actividad del salón", exact: true });
@@ -464,6 +491,8 @@ export async function verifyAdmin(browser, base) {
         data: { displayName: "Prueba sin rol" },
       });
       assert.equal(guest.status(), 200);
+      assert.equal((await other.request.get(base + "/api/admin/internal-trial")).status(), 403);
+      assert.equal((await other.request.post(base + "/api/admin/internal-trial", {headers, data:{}})).status(), 403);
       const outsider = await other.newPage();
       let adminCalls = 0;
       outsider.on("request", (request) => {

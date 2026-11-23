@@ -94,6 +94,10 @@ El [informe y las nueve capturas del juego](https://github.com/Santinou1/truco-f
 Verificación local de esta integración: `npm test` (4 pruebas), `npm run build` y `npm run test:browser` aprobados. La suite de navegador usa API/PostgreSQL reales y OTP simulado; comprueba borradores, reintentos, permisos, sesión y pantallas desde 320 px.
 
 Las cargas recibidas y retenidas por revisión de origen tienen **Acreditar**. En el detalle, revisá cuenta, referencia e importe total (neto más la cobertura de Cresium informada), escribí el motivo y confirmá. El saldo se acredita inmediatamente al confirmar la API y queda registrado el administrador, motivo y fecha en el historial. Los reintentos no duplican el crédito. Una orden sin movimiento recibido o con neto cero no permite acreditar; los retiros mantienen su circuito propio.
+## Prueba interna
+
+En el panel de testing, **Prueba interna** permite al superadministrador habilitar el salón cerrado, invitar participantes por correo verificado, cambiar los diez nombres y avatares y editar importes y esperas en segundos. Los saldos están expresados en pesos simulados. **Actualizar resultados** consulta el disponible, la entrada comprometida, las partidas, el saldo neto ganado o perdido y los puntos de cada perfil en la jornada.
+
 # Torneos con entrada y premio
 
 En Torneos → Crear torneo, elegir la moneda y el valor de entrada: patacones ficticios o reales (ARS). Con 0 es gratuito. El importe real se ingresa en pesos y se envía en centavos. La inscripción cobra una sola vez; retirarse antes del inicio o cancelar devuelve la entrada. Una posposición conserva el cobro y la inscripción.
