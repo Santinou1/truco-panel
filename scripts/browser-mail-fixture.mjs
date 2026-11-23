@@ -76,8 +76,8 @@ export async function createTestTransfers() {
       VALUES($1,$2,'77','create_order','provider_error',500,'private-fixture')
     `, [randomUUID(), issuanceError]);
     await tx.query(`
-      INSERT INTO economy_fiat.withdrawal_destinations(user_id,account_fingerprint,account_ciphertext)
-      VALUES($1,'fixture','private-fixture')
+      INSERT INTO economy_fiat.withdrawal_destinations(user_id,account_fingerprint,account_ciphertext,id)
+      VALUES($1,'fixture','private-fixture',gen_random_uuid())
     `, [userId]);
     for (const id of [pending, rejected]) {
       await tx.query(`

@@ -4,6 +4,7 @@ import {
   TournamentDetail,
   TournamentSummary,
   pesos,
+  tournamentEntry,
   roundName,
   tournamentDate,
   tournamentMutation,
@@ -21,6 +22,8 @@ type Config = {
   target: 15 | 30;
   flor: boolean;
   prize: number;
+  entryFee: number;
+  entryCurrency: "PLAY_CHIP" | "ARS";
   banner: "ancho" | "envido";
 };
 const blank: Config = {
@@ -33,6 +36,8 @@ const blank: Config = {
   target: 30,
   flor: false,
   prize: 30000,
+  entryFee: 0,
+  entryCurrency: "PLAY_CHIP",
   banner: "ancho",
 };
 const localTime = (value: string | null) => {
@@ -116,7 +121,7 @@ function Editor({
               value={c.botCount}
               onChange={(e) => {
                 const botCount = Number(e.target.value);
-                set({ ...c, botCount, prize: botCount > 0 ? 0 : c.prize });
+                set({ ...c, botCount, prize: botCount > 0 ? 0 : c.prize, entryFee: botCount > 0 ? 0 : c.entryFee });
               }}
             />
           </label>
@@ -143,6 +148,21 @@ function Editor({
               />
             </label>
           )}
+          <label>
+            Moneda de entrada
+            <select value={c.entryCurrency} disabled={c.botCount > 0}
+              onChange={(e) => set({ ...c, entryCurrency: e.target.value as Config["entryCurrency"], entryFee: 0 })}>
+              <option value="PLAY_CHIP">Patacones ficticios</option>
+              <option value="ARS">Patacones reales (ARS)</option>
+            </select>
+          </label>
+          <label>
+            {c.entryCurrency === "ARS" ? "Valor de entrada en pesos (ARS)" : "Valor de entrada en patacones ficticios"}
+            <input type="number" min={0} max={1000000} step={c.entryCurrency === "ARS" ? 0.01 : 1}
+              required disabled={c.botCount > 0} aria-describedby="entry-help"
+              value={c.entryCurrency === "ARS" ? c.entryFee / 100 : c.entryFee}
+              onChange={(e) => set({ ...c, entryFee: Math.round(Number(e.target.value) * (c.entryCurrency === "ARS" ? 100 : 1)) })} />
+          </label>
           <label>
             Premio total en pesos (ARS)
             <input
@@ -198,11 +218,13 @@ function Editor({
         </p>
         {c.botCount === 0 && (
           <p>
-            {c.capacity} jugadores · Entrada gratuita · Eliminación directa ·
-            70% al campeón y 30% al finalista. El premio se paga manualmente por
-            fuera del sistema.
+            {c.capacity} jugadores · {tournamentEntry(c)} · Eliminación directa.
+            {" "}El campeón recibe {pesos(c.prize * 0.8)} (80%) en patacones reales
+            en su cuenta. Comisión: {pesos(c.prize * 0.2)} (20%).
           </p>
         )}
+        <p id="entry-help">Con 0, la entrada es gratuita. Se cobra una sola vez al inscribirse.
+          Retirarse antes del inicio o cancelar el torneo devuelve la entrada. Si se pospone, se conserva la inscripción y el cobro.</p>
         {c.startMode === "scheduled" && (
           <p>
             Si no confirman presencia los {c.capacity} jugadores a la hora
@@ -322,6 +344,8 @@ export function TournamentAdmin({
     target: d.target,
     flor: d.flor,
     prize: d.prize,
+    entryFee: d.entryFee,
+    entryCurrency: d.entryCurrency,
     banner: d.banner,
   });
   const name = (id: string | null) =>
@@ -410,6 +434,7 @@ export function TournamentAdmin({
                       ? `Simulación · ${t.botCount} bots`
                       : `${pesos(t.prize)} en premios`}
                   </span>
+                  <small>{tournamentEntry(t)}</small>
                 </button>
               ))}
             </div>
@@ -429,8 +454,10 @@ export function TournamentAdmin({
                 `Simulación · ${detail.botCount} bots y ${detail.capacity - detail.botCount} personas · Sin premios ni ranking`
               ) : (
                 <>
-                  <strong>{pesos(detail.prize)}</strong> · Entrada gratis · Pago
-                  manual
+                  <strong>{pesos(detail.prize)}</strong> · {tournamentEntry(detail)} ·{" "}
+                  {detail.paymentMode === "wallet"
+                    ? `Campeón: ${pesos(detail.winnerPrize)} (80%) en patacones reales · Comisión: ${pesos(detail.commission)} (20%)`
+                    : "Pago manual · 70% campeón / 30% finalista"}
                 </>
               )}
             </p>
@@ -558,6 +585,7 @@ export function TournamentAdmin({
             {detail.prizes.length > 0 && (
               <section>
                 <h3>Pagos de premios</h3>
+                {detail.paymentMode === "manual" && <>
                 <p>
                   Registrá acá el pago después de realizarlo. Este botón no
                   transfiere dinero.
@@ -570,13 +598,14 @@ export function TournamentAdmin({
                     onChange={(e) => setReference(e.target.value)}
                   />
                 </label>
+                </>}
                 {detail.prizes.map((p) => (
                   <div className="tournament-payment" key={p.place}>
                     <span>
                       {p.place}.º {name(p.userId)} · {pesos(p.amount)}
                     </span>
                     {p.status === "paid" ? (
-                      <strong>Pago registrado</strong>
+                      <strong>{detail.paymentMode === "wallet" ? "Acreditado en patacones reales" : "Pago registrado"}</strong>
                     ) : (
                       <button
                         disabled={busy || reference.trim().length < 3}
@@ -667,6 +696,7 @@ export function TournamentAdmin({
                       "check-in": "Presencia confirmada",
                       started: "Iniciado",
                       finished: "Finalizado",
+                      prize_credited: "Premio acreditado · 80% campeón / 20% comisión",
                       postponed: "Pospuesto",
                       rescheduled: "Reprogramado",
                       cancelled: "Cancelado",
