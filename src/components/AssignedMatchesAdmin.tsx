@@ -13,7 +13,11 @@ type PlayerLookup = { query: string } & (
   | { results: PlayerResults; error?: never }
   | { error: string; results?: never }
 );
-type Invitation = { path: string; expiresAt: string };
+type Invitation = {
+  path: string;
+  expiresAt: string;
+  rankingCurrency?: "ARS" | "PLAY_CHIP";
+};
 type MatchRules = { target: 15 | 30; flor: boolean };
 type Denied = (status: 401 | 403) => void;
 const endpoint = "/admin/assigned-matches";
@@ -330,7 +334,7 @@ export function AssignedMatchesAdmin({
             </div>
           </fieldset>
           <fieldset disabled={saving}>
-            <legend>Ranking diario de patacones ficticios</legend>
+            <legend>Ranking diario de Patacones reales</legend>
             <p className="muted">
               La jornada cuenta partidas iniciadas desde las 09:00 hasta antes
               de las 03:00 del día siguiente, hora argentina.
@@ -379,7 +383,9 @@ export function AssignedMatchesAdmin({
               {result.target} puntos · {result.flor ? "Con flor" : "Sin flor"}
             </p>
             <p>
-              Ranking diario · +{result.winPoints} por victoria y −
+              Ranking diario de Patacones{" "}
+              {result.rankingCurrency === "ARS" ? "reales" : "ficticios"} · +
+              {result.winPoints} por victoria y −
               {result.lossPoints} por derrota.
             </p>
             <p className="muted">

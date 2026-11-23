@@ -403,8 +403,8 @@ export function DailyRankingAdmin({ onDenied }: { onDenied: Denied }) {
                 </strong>
                 <small>
                   {value === "ARS"
-                    ? "Clasificación de mesas reales"
-                    : "Clasificación de mesas ficticias"}
+                    ? "Mesas reales y partidas asignadas"
+                    : "Mesas ficticias y gratuitas de Freeroll"}
                 </small>
               </span>
               <span className="ranking-admin-check" aria-hidden="true">
@@ -416,8 +416,8 @@ export function DailyRankingAdmin({ onDenied }: { onDenied: Denied }) {
       </div>
       <p className="ranking-admin-scope">
         {currency === "ARS"
-          ? "Solo partidas con patacones reales."
-          : "Solo partidas con patacones ficticios, incluidas las mesas gratis."}
+          ? "Cuentan las mesas con Patacones reales y las partidas por usuario asignadas a este ranking."
+          : "Cuentan las partidas de Patacones ficticios y las mesas gratuitas de Freeroll."}
       </p>
       <RankingAdminBoard
         key={currency}
