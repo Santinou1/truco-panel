@@ -47,7 +47,7 @@ Al agregar diseños o cambiar imágenes publicadas, actualizar las URLs en `src/
 
 ## Partidas por usuario
 
-En **Partidas por usuario**, escribí parte del nombre o del usuario, o el correo completo. Elegí dos cuentas verificadas distintas de las sugerencias que aparecen al escribir. Cargá los puntos que suma el ganador y los que se descuentan al perdedor en el ranking diario de patacones ficticios. El formulario admite enteros entre 0 y 1000. Copiá el enlace y compartilo con ambos jugadores. La mesa es gratuita, a 30 puntos y sin flor. Tienen 24 horas para iniciarla.
+En **Partidas por usuario**, escribí parte del nombre o del usuario, o el correo completo. Elegí dos cuentas verificadas distintas de las sugerencias que aparecen al escribir. Configurá una partida a 15 o 30 puntos y elegí con o sin flor. Cargá los puntos que suma el ganador y los que se descuentan al perdedor en el ranking diario de Patacones reales. El formulario admite enteros entre 0 y 1000. Copiá el enlace y compartilo con ambos jugadores. Tienen 24 horas para iniciar la mesa gratuita.
 
 ## Auditoría de transferencias
 
@@ -81,7 +81,7 @@ Simulaciones: el panel permite configurar de 0 a 8/16 bots. Se incorporan al pub
 
 El ranking administrativo comparte la identidad plata/verde para Freeroll y oro para Reales. Usa iconografía de código, Roboto local licenciado para datos y los títulos del sistema visual; no depende de ilustraciones nuevas sin publicar. El selector, calendario, estadísticas y tablas conservan teclado y diseño desde 320 px.
 
-La sección **Ranking diario** permite elegir **Freeroll · gratis** (solo patacones ficticios, premio diario declarado $20.000 ARS) o **Patacones reales** (solo ARS, premio $50.000 ARS). El calendario, líderes, totales, clasificación, historial y detalle se consultan por moneda. Al cambiar el selector se vuelve al calendario y se reinician los filtros. Elegí una fecha para consultar la jornada; **Ver partidas** abre el historial del jugador y permite buscar por nombre, correo del rival o ID de partida y filtrar por resultado. No acredita premios automáticamente. En **Mesas con patacones reales** se editan los puntos por resultado y tramo. Si el abandono o el vencimiento de la reconexión define un ganador, se aplican los puntos de victoria y derrota en ambas monedas.
+La sección **Ranking diario** permite elegir **Freeroll · gratis** (premio diario declarado $20.000 ARS) o **Patacones reales** (mesas reales e invitaciones gratuitas asignadas a ese ranking, premio $50.000 ARS). El calendario, líderes, totales, clasificación, historial y detalle se consultan por ranking. Al cambiar el selector se vuelve al calendario y se reinician los filtros. Elegí una fecha para consultar la jornada; **Ver partidas** abre el historial del jugador y permite buscar por nombre, correo del rival o ID de partida y filtrar por resultado. No acredita premios automáticamente. En **Mesas con patacones reales** se editan los puntos por resultado y tramo. Si el abandono o el vencimiento de la reconexión define un ganador, se aplican los puntos de victoria y derrota en ambos rankings.
 
 El detalle muestra los equipos, el marcador, las horas de inicio y final en Argentina y la duración. En **Manos de la partida** podés abrir cada mano y ver las cartas jugadas en primera, segunda y tercera con las imágenes publicadas del mazo. Cada baza muestra sus cantos, respuestas y puntos. La API comprueba el rol de superadministrador vigente en cada consulta. La prueba conjunta `npm run test:ranking:browser` se ejecuta desde `truco-back`.
 

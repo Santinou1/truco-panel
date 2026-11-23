@@ -13,7 +13,12 @@ type PlayerLookup = { query: string } & (
   | { results: PlayerResults; error?: never }
   | { error: string; results?: never }
 );
-type Invitation = { path: string; expiresAt: string };
+type Invitation = {
+  path: string;
+  expiresAt: string;
+  rankingCurrency?: "ARS" | "PLAY_CHIP";
+};
+type MatchRules = { target: 15 | 30; flor: boolean };
 type Denied = (status: 401 | 403) => void;
 const endpoint = "/admin/assigned-matches";
 const argentinaTime = new Intl.DateTimeFormat("es-AR", {
@@ -198,12 +203,18 @@ export function AssignedMatchesAdmin({
 }) {
   const [one, setOne] = useState<Player | null>(null);
   const [two, setTwo] = useState<Player | null>(null);
+  const [target, setTarget] = useState<MatchRules["target"]>(30);
+  const [flor, setFlor] = useState(false);
   const [win, setWin] = useState("");
   const [loss, setLoss] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState<
-    | (Invitation & { title: string; winPoints: number; lossPoints: number })
+    | (Invitation & MatchRules & {
+        title: string;
+        winPoints: number;
+        lossPoints: number;
+      })
     | null
   >(null);
   const [copyStatus, setCopyStatus] = useState("");
@@ -217,6 +228,8 @@ export function AssignedMatchesAdmin({
     const body = {
       playerOneId: one.id,
       playerTwoId: two.id,
+      target,
+      flor,
       winPoints: Number(win),
       lossPoints: Number(loss),
     };
@@ -236,6 +249,8 @@ export function AssignedMatchesAdmin({
       setResult({
         ...invitation,
         title: `${one.displayName} vs. ${two.displayName}`,
+        target: body.target,
+        flor: body.flor,
         winPoints: body.winPoints,
         lossPoints: body.lossPoints,
       });
@@ -268,7 +283,7 @@ export function AssignedMatchesAdmin({
       >
         <h1 id="assigned-matches-title">Partidas por usuario</h1>
         <p className="muted">
-          Creá una mesa privada 1 vs. 1, gratuita, a 30 puntos y sin flor.
+          Creá una mesa privada 1 vs. 1, gratuita.
         </p>
         <div className="assigned-grid">
           <PlayerPicker
@@ -290,7 +305,36 @@ export function AssignedMatchesAdmin({
         </div>
         <form onSubmit={create} aria-busy={saving}>
           <fieldset disabled={saving}>
-            <legend>Ranking diario de patacones ficticios</legend>
+            <legend>Reglas de la partida</legend>
+            <div className="assigned-grid">
+              <label>
+                Puntos para ganar
+                <select
+                  value={target}
+                  onChange={(event) =>
+                    setTarget(event.currentTarget.value === "15" ? 15 : 30)
+                  }
+                >
+                  <option value="15">15 puntos</option>
+                  <option value="30">30 puntos</option>
+                </select>
+              </label>
+              <label>
+                Flor
+                <select
+                  value={flor ? "with" : "without"}
+                  onChange={(event) =>
+                    setFlor(event.currentTarget.value === "with")
+                  }
+                >
+                  <option value="without">Sin flor</option>
+                  <option value="with">Con flor</option>
+                </select>
+              </label>
+            </div>
+          </fieldset>
+          <fieldset disabled={saving}>
+            <legend>Ranking diario de Patacones reales</legend>
             <p className="muted">
               La jornada cuenta partidas iniciadas desde las 09:00 hasta antes
               de las 03:00 del día siguiente, hora argentina.
@@ -336,7 +380,12 @@ export function AssignedMatchesAdmin({
               Enlace listo para {result.title}
             </h2>
             <p>
-              Ranking diario · +{result.winPoints} por victoria y −
+              {result.target} puntos · {result.flor ? "Con flor" : "Sin flor"}
+            </p>
+            <p>
+              Ranking diario de Patacones{" "}
+              {result.rankingCurrency === "ARS" ? "reales" : "ficticios"} · +
+              {result.winPoints} por victoria y −
               {result.lossPoints} por derrota.
             </p>
             <p className="muted">
