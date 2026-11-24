@@ -194,6 +194,7 @@ export async function verifyAdmin(browser, base) {
     const internal = base + "/api/admin/internal-trial";
     const trial = await (await context.request.get(internal)).json();
     assert.equal(trial.profiles.length,10);
+    assert.equal(trial.publicAccess, false);
     const invites = page.getByLabel("Correos invitados, uno por línea");
     await expect(invites).toHaveValue(trial.invites.join("\n"));
     const profileName = page.getByLabel("Nombre del perfil 1", {exact:true});
@@ -205,9 +206,42 @@ export async function verifyAdmin(browser, base) {
     await invites.fill([...trial.invites,"taller@example.test"].join("\n"));
     await page.getByRole("button", {name:"Guardar configuración"}).click();
     await expect(page.getByText("Configuración guardada.", {exact:true})).toBeVisible();
-    const savedTrial = await (await context.request.get(internal)).json();
+    let savedTrial = await (await context.request.get(internal)).json();
     assert.equal(savedTrial.profiles[0].name,temporaryName);
     assert.ok(savedTrial.invites.includes("taller@example.test"));
+    const publicAccess = page.getByRole("checkbox", {name:"Abrir a todo el público de testing"});
+    const saveTrial = async () => {
+      const [response] = await Promise.all([
+        page.waitForResponse(r => r.url() === internal && r.request().method() === "POST" && r.ok()),
+        page.getByRole("button", {name:"Guardar configuración"}).click(),
+      ]);
+      return response;
+    };
+    await publicAccess.check();
+    await expect(invites).toHaveCount(0);
+    const openResponse = await saveTrial();
+    const openTrial = await openResponse.json();
+    assert.equal(openTrial.publicAccess, true);
+    assert.deepEqual(openTrial.invites, savedTrial.invites);
+
+    // A previous panel version sends all settings except publicAccess.
+    const legacySettings = openResponse.request().postDataJSON();
+    delete legacySettings.publicAccess;
+    legacySettings.expectedVersion = openTrial.version;
+    legacySettings.invites = [];
+    const legacyResponse = await context.request.post(internal, { headers, data: legacySettings });
+    assert.equal(legacyResponse.status(), 200);
+    const legacyResult = await legacyResponse.json();
+    assert.equal(legacyResult.publicAccess, true);
+    assert.deepEqual(legacyResult.invites, savedTrial.invites);
+
+    await page.reload();
+    await page.getByRole("button", {name:"Prueba interna", exact:true}).click();
+    await expect(publicAccess).toBeChecked();
+    await publicAccess.uncheck();
+    await expect(invites).toHaveValue(savedTrial.invites.join("\n"));
+    savedTrial = await (await saveTrial()).json();
+    assert.equal(savedTrial.publicAccess, false);
     // Display-only fixture for a winner with a $501 stake and a $901.80 payout.
     await page.route(internal, route => route.fulfill({ json: {
       ...savedTrial, profiles: savedTrial.profiles.map((profile, i) =>
@@ -225,7 +259,7 @@ export async function verifyAdmin(browser, base) {
     await Promise.all([page.waitForResponse(r=>r.url()===internal && r.request().method()==="POST" && r.ok()),
       page.getByRole("button", {name:"Guardar configuración"}).click()]);
     await page.setViewportSize({width:1440,height:1000});
-    report.checks.push("Prueba interna: diez saldos, edición de perfil e invitados, borradores y vista de 320 px");
+    report.checks.push("Prueba interna: acceso público y por invitación, cliente anterior, diez saldos, edición de perfil y vista de 320 px");
     const audit = await verifyFiatTransferAudit(page, base, headers, dir);
     report.checks.push("Auditoría: búsqueda, paginación, importes, cargas en revisión, aprobación, errores y móvil");
     const activity = () => page.getByRole("button", { name: "Actividad del salón", exact: true });

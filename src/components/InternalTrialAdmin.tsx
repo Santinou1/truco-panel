@@ -7,7 +7,7 @@ type Identity = { slot: number; name: string; avatarId: string };
 type Profile = Identity & {
   available: number; reserved: number; net: string; played: number; won: number; lost: number; pointsToday: number;
 };
-type Options = { enabled: boolean; autoOpen: boolean; autoFill: boolean; autoPair: boolean };
+type Options = { enabled: boolean; publicAccess: boolean; autoOpen: boolean; autoFill: boolean; autoPair: boolean };
 type Status = Options & {
   version: number; entryFees: number[]; botWaitSeconds: number; humanWaitSeconds: number; invites: string[]; profiles: Profile[];
 };
@@ -18,13 +18,14 @@ const endpoint = "/admin/internal-trial";
 const money = new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 2 });
 const flags: [keyof Options, string][] = [
   ["enabled", "Activar la prueba interna"],
+  ["publicAccess", "Abrir a todo el público de testing"],
   ["autoOpen", "Mantener una mesa de perfiles internos disponible"],
   ["autoFill", "Completar mesas de participantes"],
   ["autoPair", "Permitir partidas entre perfiles internos"],
 ];
 function edit(status: Status): Draft {
   return {
-    version: status.version, enabled: status.enabled, autoOpen: status.autoOpen, autoFill: status.autoFill,
+    version: status.version, enabled: status.enabled, publicAccess: status.publicAccess ?? false, autoOpen: status.autoOpen, autoFill: status.autoFill,
     autoPair: status.autoPair, fees: status.entryFees.join(", "), botWait: String(status.botWaitSeconds),
     humanWait: String(status.humanWaitSeconds), emails: status.invites.join("\n"),
     profiles: status.profiles.map(({slot, name, avatarId}) => ({slot, name, avatarId})),
@@ -78,7 +79,7 @@ export function InternalTrialAdmin({ onDenied }: { onDenied: (status: 401 | 403)
     }
     const invites = draft.emails.split(/[\s,;]+/u).filter(Boolean);
     void request({
-      expectedVersion: draft.version, enabled: draft.enabled, autoOpen: draft.autoOpen, autoFill: draft.autoFill,
+      expectedVersion: draft.version, enabled: draft.enabled, publicAccess: draft.publicAccess, autoOpen: draft.autoOpen, autoFill: draft.autoFill,
       autoPair: draft.autoPair, entryFees, botWaitSeconds: Number(draft.botWait),
       humanWaitSeconds: Number(draft.humanWait), invites, profiles: draft.profiles,
     });
@@ -89,7 +90,7 @@ export function InternalTrialAdmin({ onDenied }: { onDenied: (status: 401 | 403)
 
   return <main className="page internal-trial-admin">
     <h1>Prueba interna</h1>
-    <p>Mesas cerradas con saldo simulado. Cada perfil interno empieza con $100.000.</p>
+    <p>Mesas con saldo simulado. Cada perfil interno empieza con $100.000.</p>
     {error && <p role="alert">{error}</p>}
     {notice && <p role="status">{notice}</p>}
     <button type="button" disabled={busy || (!status && !error)} onClick={() => void request()}>Actualizar resultados</button>
@@ -124,9 +125,9 @@ export function InternalTrialAdmin({ onDenied }: { onDenied: (status: 401 | 403)
               <input type="number" required min={120} max={3600} step={1} value={draft.humanWait} onChange={e => setDraft({...draft, humanWait: e.target.value})}/>
             </label>
           </div>
-          <label>Correos invitados, uno por línea
+          {!draft.publicAccess && <label>Correos invitados, uno por línea
             <textarea rows={4} value={draft.emails} onChange={e => setDraft({...draft, emails: e.target.value})}/>
-          </label>
+          </label>}
         </fieldset>
         <fieldset disabled={busy}>
           <legend>Perfiles internos</legend>

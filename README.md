@@ -96,7 +96,7 @@ Verificación local de esta integración: `npm test` (4 pruebas), `npm run build
 Las cargas recibidas y retenidas por revisión de origen tienen **Acreditar**. En el detalle, revisá cuenta, referencia e importe total (neto más la cobertura de Cresium informada), escribí el motivo y confirmá. El saldo se acredita inmediatamente al confirmar la API y queda registrado el administrador, motivo y fecha en el historial. Los reintentos no duplican el crédito. Una orden sin movimiento recibido o con neto cero no permite acreditar; los retiros mantienen su circuito propio.
 ## Prueba interna
 
-En el panel de testing, **Prueba interna** permite al superadministrador habilitar el salón cerrado, invitar participantes por correo verificado, cambiar los diez nombres y avatares y editar importes y esperas en segundos. Los saldos están expresados en pesos simulados. **Actualizar resultados** consulta el disponible, la entrada comprometida, las partidas, el saldo neto ganado o perdido y los puntos de cada perfil en la jornada.
+En el panel de testing, **Prueba interna** permite al superadministrador activar las mesas con saldo simulado. **Abrir a todo el público de testing** admite a quienes entran con cuenta o como invitado. Al desmarcarlo vuelve a regir la lista de correos verificados que guarda el panel. También se pueden cambiar los diez nombres y avatares, los importes y las esperas en segundos. **Actualizar resultados** consulta el disponible, la entrada comprometida, las partidas, el saldo neto ganado o perdido y los puntos de cada perfil en la jornada.
 
 # Torneos con entrada y premio
 
