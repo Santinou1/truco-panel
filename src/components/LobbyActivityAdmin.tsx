@@ -5,7 +5,8 @@ import "./lobby-activity-admin.css";
 type LobbyActivity = { available: boolean; enabled: boolean; version: number };
 type RealActivity = LobbyActivity & {
   entryFees: number[];
-  fundingAccountEmail: string | null;
+  reserveLimitMinor: number;
+  walletAvailableMinor: number | null;
   backingAvailable: number;
   profiles: {
     user_id: string; alias: string; balance: number; reserved: number;
@@ -34,7 +35,7 @@ function reportError(
 
 function RealLobbyActivity({ onDenied }: { onDenied: Denied }) {
   const [status, setStatus] = useState<RealActivity>();
-  const [email, setEmail] = useState("");
+  const [reserve, setReserve] = useState("");
   const [fees, setFees] = useState("");
   const [enabled, setEnabled] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -43,7 +44,7 @@ function RealLobbyActivity({ onDenied }: { onDenied: Denied }) {
 
   function useStatus(current: RealActivity) {
     setStatus(current);
-    setEmail(current.fundingAccountEmail ?? "soporte@lapulperia.cloud");
+    setReserve((current.reserveLimitMinor / 100).toString());
     setFees(current.entryFees.map(fee => (fee / 100).toString()).join(", "));
     setEnabled(current.enabled);
   }
@@ -73,7 +74,7 @@ function RealLobbyActivity({ onDenied }: { onDenied: Denied }) {
       const current = await api<RealActivity>(realEndpoint, {
         expectedVersion: status.version,
         enabled,
-        fundingAccountEmail: email,
+        reserveLimitMinor: Math.round(Number(reserve) * 100),
         entryFees: amounts.map(value => Math.round(Number(value) * 100)),
       });
       useStatus(current);
@@ -93,7 +94,12 @@ function RealLobbyActivity({ onDenied }: { onDenied: Denied }) {
   return (
     <section className="panel lobby-activity-admin real-lobby-activity" aria-labelledby="lobby-real-title">
       <h2 id="lobby-real-title">Actividad con Patacones reales</h2>
-      <p>Saldo disponible de la cuenta de respaldo {pesos.format((status?.backingAvailable ?? 0) / 100)}.</p>
+      {status && (
+        <>
+          <p>Disponible en Cresium {status.walletAvailableMinor === null ? "Sin confirmar" : pesos.format(status.walletAvailableMinor / 100)}.</p>
+          <p>Fondo disponible para mesas {pesos.format(status.backingAvailable / 100)}.</p>
+        </>
+      )}
       {error && <p role="alert">{error}</p>}
       {saved && <p role="status">Configuración guardada.</p>}
       {status?.available && (
@@ -105,8 +111,8 @@ function RealLobbyActivity({ onDenied }: { onDenied: Denied }) {
                 Activar actividad con Patacones reales
               </label>
               <label>
-                Correo de la cuenta de respaldo
-                <input type="email" required value={email} onChange={event => setEmail(event.target.value)} />
+                Fondo de premios de La Pulpería en Cresium
+                <input type="number" min={0} step="0.01" required value={reserve} onChange={event => setReserve(event.target.value)} />
               </label>
               <label>
                 Entradas en pesos, separadas por comas
