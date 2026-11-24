@@ -6,7 +6,6 @@ type LobbyActivity = { available: boolean; enabled: boolean; version: number };
 type RealActivity = LobbyActivity & {
   entryFees: number[];
   reserveLimitMinor: number;
-  walletAvailableMinor: number | null;
   backingAvailable: number;
   profiles: {
     user_id: string; alias: string; balance: number; reserved: number;
@@ -94,11 +93,10 @@ function RealLobbyActivity({ onDenied }: { onDenied: Denied }) {
   return (
     <section className="panel lobby-activity-admin real-lobby-activity" aria-labelledby="lobby-real-title">
       <h2 id="lobby-real-title">Actividad con Patacones reales</h2>
-      {status && (
-        <>
-          <p>Disponible en Cresium {status.walletAvailableMinor === null ? "Sin confirmar" : pesos.format(status.walletAvailableMinor / 100)}.</p>
-          <p>Fondo disponible para mesas {pesos.format(status.backingAvailable / 100)}.</p>
-        </>
+      {status?.available && (
+        <p>{status.enabled
+          ? `Fondo disponible para mesas ${pesos.format(status.backingAvailable / 100)}.`
+          : "Actividad desactivada."}</p>
       )}
       {error && <p role="alert">{error}</p>}
       {saved && <p role="status">Configuración guardada.</p>}
@@ -111,7 +109,7 @@ function RealLobbyActivity({ onDenied }: { onDenied: Denied }) {
                 Activar actividad con Patacones reales
               </label>
               <label>
-                Fondo de premios de La Pulpería en Cresium
+                Límite del fondo de premios en pesos
                 <input type="number" min={0} step="0.01" required value={reserve} onChange={event => setReserve(event.target.value)} />
               </label>
               <label>
