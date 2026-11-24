@@ -198,7 +198,6 @@ export async function startBrowserApi(port = 3004) {
     ...fixture.config,
     NODE_ENV: "test",
     LOBBY_ACTIVITY_ENABLED: "1",
-    INTERNAL_PLAY_ENABLED: "1",
     PORT: String(port),
     ADMIN_PANEL_URL: "http://127.0.0.1:5177",
     APP_URL: `http://localhost:${port}`,

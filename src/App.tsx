@@ -2,7 +2,6 @@ import { TournamentAdmin } from "./components/TournamentAdmin";
 import { AssignedMatchesAdmin } from "./components/AssignedMatchesAdmin";
 import { DailyRankingAdmin } from "./components/DailyRankingAdmin";
 import { LobbyActivityAdmin } from "./components/LobbyActivityAdmin";
-import { InternalTrialAdmin } from "./components/InternalTrialAdmin";
 import { FiatGamesAdmin } from "./components/FiatGamesAdmin";
 import { FiatTransfersAdmin } from "./components/FiatTransfersAdmin";
 import { ReferralsAdmin } from "./components/ReferralsAdmin";
@@ -16,7 +15,7 @@ import type { User } from "./types";
 
 export function App() {
   const [section, setSection] = useState<
-    "catalog" | "tournaments" | "assigned-matches" | "ranking" | "lobby" | "fiat-games" | "fiat-transfers" | "referrals" | "support" | "internal-trial"
+    "catalog" | "tournaments" | "assigned-matches" | "ranking" | "lobby" | "fiat-games" | "fiat-transfers" | "referrals" | "support"
   >("catalog");
   const [user, setUser] = useState<User | null>(null);
   const [booting, setBooting] = useState(true);
@@ -27,7 +26,6 @@ export function App() {
   const [error, setError] = useState("");
   const lock = useRef(false);
   const gameUrl = import.meta.env.VITE_GAME_URL || "http://localhost:5174";
-  const trialPanel = ["testingpanel.lapulperia.cloud", "localhost", "127.0.0.1", "[::1]"].includes(location.hostname);
   const accept = useCallback(async (next: User) => {
     setUser(next);
     setError("");
@@ -144,10 +142,6 @@ export function App() {
                 >
                   Actividad del salón
                 </button>
-                {trialPanel && (
-                  <button aria-current={section === "internal-trial" ? "page" : undefined}
-                    onClick={() => setSection("internal-trial")}>Prueba interna</button>
-                )}
                 <button
                   aria-current={section === "fiat-games" ? "page" : undefined}
                   onClick={() => setSection("fiat-games")}
@@ -254,8 +248,6 @@ export function App() {
               <AssignedMatchesAdmin key={user.id} gameUrl={gameUrl} onDenied={denied} />
             ) : section === "lobby" ? (
               <LobbyActivityAdmin key={user.id} onDenied={denied} />
-            ) : section === "internal-trial" && trialPanel ? (
-              <InternalTrialAdmin key={user.id} onDenied={denied} />
             ) : section === "fiat-games" ? (
               <FiatGamesAdmin key={user.id} onDenied={denied} />
             ) : section === "fiat-transfers" ? (

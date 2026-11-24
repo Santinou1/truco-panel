@@ -160,7 +160,6 @@ export async function verifyAdmin(browser, base) {
   try {
     await page.goto(base + "/");
     assert.equal((await context.request.post(base + "/api/admin/fiat-transfers/search", { headers, data: {} })).status(), 401);
-    assert.equal((await context.request.get(base + "/api/admin/internal-trial")).status(), 401);
     await expect(page.getByLabel("Email", { exact: true })).toBeVisible();
     await expect(page).toHaveURL(base + "/");
     await expect(
@@ -190,76 +189,6 @@ export async function verifyAdmin(browser, base) {
     await expect(
       page.getByRole("button", { name: "Catálogo y precios", exact: false }),
     ).toBeVisible();
-    await page.getByRole("button", {name:"Prueba interna", exact:true}).click();
-    const internal = base + "/api/admin/internal-trial";
-    const trial = await (await context.request.get(internal)).json();
-    assert.equal(trial.profiles.length,10);
-    assert.equal(trial.publicAccess, false);
-    const invites = page.getByLabel("Correos invitados, uno por línea");
-    await expect(invites).toHaveValue(trial.invites.join("\n"));
-    const profileName = page.getByLabel("Nombre del perfil 1", {exact:true});
-    const temporaryName = "Perfil de prueba UI";
-    await profileName.fill(temporaryName);
-    await page.getByRole("button", {name:"Actualizar resultados"}).click();
-    await expect(page.getByText("Resultados actualizados.", {exact:true})).toBeVisible();
-    await expect(profileName).toHaveValue(temporaryName);
-    await invites.fill([...trial.invites,"taller@example.test"].join("\n"));
-    await page.getByRole("button", {name:"Guardar configuración"}).click();
-    await expect(page.getByText("Configuración guardada.", {exact:true})).toBeVisible();
-    let savedTrial = await (await context.request.get(internal)).json();
-    assert.equal(savedTrial.profiles[0].name,temporaryName);
-    assert.ok(savedTrial.invites.includes("taller@example.test"));
-    const publicAccess = page.getByRole("checkbox", {name:"Abrir a todo el público de testing"});
-    const saveTrial = async () => {
-      const [response] = await Promise.all([
-        page.waitForResponse(r => r.url() === internal && r.request().method() === "POST" && r.ok()),
-        page.getByRole("button", {name:"Guardar configuración"}).click(),
-      ]);
-      return response;
-    };
-    await publicAccess.check();
-    await expect(invites).toHaveCount(0);
-    const openResponse = await saveTrial();
-    const openTrial = await openResponse.json();
-    assert.equal(openTrial.publicAccess, true);
-    assert.deepEqual(openTrial.invites, savedTrial.invites);
-
-    // A previous panel version sends all settings except publicAccess.
-    const legacySettings = openResponse.request().postDataJSON();
-    delete legacySettings.publicAccess;
-    legacySettings.expectedVersion = openTrial.version;
-    legacySettings.invites = [];
-    const legacyResponse = await context.request.post(internal, { headers, data: legacySettings });
-    assert.equal(legacyResponse.status(), 200);
-    const legacyResult = await legacyResponse.json();
-    assert.equal(legacyResult.publicAccess, true);
-    assert.deepEqual(legacyResult.invites, savedTrial.invites);
-
-    await page.reload();
-    await page.getByRole("button", {name:"Prueba interna", exact:true}).click();
-    await expect(publicAccess).toBeChecked();
-    await publicAccess.uncheck();
-    await expect(invites).toHaveValue(savedTrial.invites.join("\n"));
-    savedTrial = await (await saveTrial()).json();
-    assert.equal(savedTrial.publicAccess, false);
-    // Display-only fixture for a winner with a $501 stake and a $901.80 payout.
-    await page.route(internal, route => route.fulfill({ json: {
-      ...savedTrial, profiles: savedTrial.profiles.map((profile, i) =>
-        i === 0 ? {...profile, available:100400.80, net:"400.80"} : profile),
-    } }));
-    await page.getByRole("button", {name:"Actualizar resultados"}).click();
-    const winnerRow = page.getByRole("row").filter({hasText:temporaryName});
-    await expect(winnerRow.locator("td").nth(0)).toContainText("100.400,80");
-    await expect(winnerRow.locator("td").nth(2)).toContainText("400,80");
-    await page.unroute(internal);
-    await page.setViewportSize({width:320,height:850});
-    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth<=innerWidth));
-    await invites.fill(trial.invites.join("\n"));
-    await profileName.fill(trial.profiles[0].name);
-    await Promise.all([page.waitForResponse(r=>r.url()===internal && r.request().method()==="POST" && r.ok()),
-      page.getByRole("button", {name:"Guardar configuración"}).click()]);
-    await page.setViewportSize({width:1440,height:1000});
-    report.checks.push("Prueba interna: acceso público y por invitación, cliente anterior, diez saldos, edición de perfil y vista de 320 px");
     const audit = await verifyFiatTransferAudit(page, base, headers, dir);
     report.checks.push("Auditoría: búsqueda, paginación, importes, cargas en revisión, aprobación, errores y móvil");
     const activity = () => page.getByRole("button", { name: "Actividad del salón", exact: true });
@@ -535,8 +464,6 @@ export async function verifyAdmin(browser, base) {
         data: { displayName: "Prueba sin rol" },
       });
       assert.equal(guest.status(), 200);
-      assert.equal((await other.request.get(base + "/api/admin/internal-trial")).status(), 403);
-      assert.equal((await other.request.post(base + "/api/admin/internal-trial", {headers, data:{}})).status(), 403);
       const outsider = await other.newPage();
       let adminCalls = 0;
       outsider.on("request", (request) => {
