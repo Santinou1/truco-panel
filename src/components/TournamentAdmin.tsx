@@ -4,6 +4,7 @@ import {
   TournamentDetail,
   TournamentSummary,
   pesos,
+  percentage,
   tournamentEntry,
   roundName,
   tournamentDate,
@@ -12,6 +13,7 @@ import {
   pendingTournamentIntent,
 } from "../tournaments";
 import "./tournament-admin.css";
+import { TournamentReferralSelector } from "./TournamentReferralSelector";
 type Config = {
   capacity: 8 | 16;
   botCount: number;
@@ -22,6 +24,8 @@ type Config = {
   target: 15 | 30;
   flor: boolean;
   prize: number;
+  referralCode: string | null;
+  commissionBps: number;
   entryFee: number;
   entryCurrency: "PLAY_CHIP" | "ARS";
   banner: "ancho" | "envido";
@@ -36,6 +40,8 @@ const blank: Config = {
   target: 30,
   flor: false,
   prize: 30000,
+  referralCode: null,
+  commissionBps: 2000,
   entryFee: 0,
   entryCurrency: "PLAY_CHIP",
   banner: "ancho",
@@ -52,14 +58,18 @@ function Editor({
   busy,
   onSave,
   onClose,
+  onDenied,
 }: {
   initial: Config;
   busy: boolean;
   onSave: (c: Config) => void;
   onClose: () => void;
+  onDenied: (status: 401 | 403) => void;
 }) {
   const [c, set] = useState(initial);
   const [date, setDate] = useState(localTime(c.startsAt));
+  const [exclusive, setExclusive] = useState(c.referralCode !== null);
+  const commission = Math.round(c.prize * c.commissionBps / 100) / 100;
   return (
     <form
       className="panel tournament-editor"
@@ -93,6 +103,20 @@ function Editor({
           />
         </label>
         <div className="tournament-form-grid">
+          <label>Destinatarios del torneo
+            <select value={exclusive ? "referral" : "all"} onChange={e => {
+              const restricted = e.target.value === "referral";
+              setExclusive(restricted);
+              if (!restricted) set({ ...c, referralCode: null });
+            }}>
+              <option value="all">Todos los jugadores</option>
+              <option value="referral">Exclusivo por referido</option>
+            </select>
+          </label>
+          <label>Comisión (%)
+            <input type="number" min={0} max={100} step={0.01} required value={c.commissionBps / 100}
+              onChange={e => set({ ...c, commissionBps: Math.round(Number(e.target.value) * 100) })} />
+          </label>
           <label>
             Participantes
             <select
@@ -211,6 +235,7 @@ function Editor({
             </select>
           </label>
         </div>
+        {exclusive && <TournamentReferralSelector value={c.referralCode} onChange={referralCode => set({ ...c, referralCode })} onDenied={onDenied} />}
         <p id="bot-help">
           {c.botCount > 0
             ? `Simulación: ${c.botCount} bots y ${c.capacity - c.botCount} lugares para personas. Los bots entran al publicar y juegan automáticamente. Sin premios ni cambios de ranking.`
@@ -219,8 +244,8 @@ function Editor({
         {c.botCount === 0 && (
           <p>
             {c.capacity} jugadores · {tournamentEntry(c)} · Eliminación directa.
-            {" "}El campeón recibe {pesos(c.prize * 0.8)} (80%) en patacones reales
-            en su cuenta. Comisión: {pesos(c.prize * 0.2)} (20%).
+            {" "}El campeón recibe {pesos(c.prize - commission)} ({percentage(10000 - c.commissionBps)}) en patacones reales
+            en su cuenta. Comisión: {pesos(commission)} ({percentage(c.commissionBps)}).
           </p>
         )}
         <p id="entry-help">Con 0, la entrada es gratuita. Se cobra una sola vez al inscribirse.
@@ -344,6 +369,8 @@ export function TournamentAdmin({
     target: d.target,
     flor: d.flor,
     prize: d.prize,
+    referralCode: d.referralCode ?? null,
+    commissionBps: d.commissionBps ?? 2000,
     entryFee: d.entryFee,
     entryCurrency: d.entryCurrency,
     banner: d.banner,
@@ -396,6 +423,7 @@ export function TournamentAdmin({
           key={editor.id ?? JSON.stringify(editor.config)}
           initial={editor.config}
           busy={busy}
+          onDenied={onDenied}
           onClose={() => setEditor(null)}
           onSave={(c) =>
             void mutate(
@@ -435,6 +463,7 @@ export function TournamentAdmin({
                       : `${pesos(t.prize)} en premios`}
                   </span>
                   <small>{tournamentEntry(t)}</small>
+                  {t.referralCode && <small>Exclusivo · {t.referralAlias ?? t.referralCode}</small>}
                 </button>
               ))}
             </div>
@@ -445,6 +474,7 @@ export function TournamentAdmin({
             <span className="eyebrow">{tournamentStatus[detail.status]}</span>
             <h2>{detail.name}</h2>
             <p>{detail.description}</p>
+            <p>{detail.referralCode ? `Exclusivo por referido: ${detail.referralAlias ? `${detail.referralAlias} · ` : ""}${detail.referralCode} · Referidos y dueño del código` : "Abierto a todos los jugadores"}</p>
             <p>
               {tournamentDate(detail.startsAt, detail.capacity)} ·{" "}
               {detail.target} tantos · {detail.flor ? "Con flor" : "Sin flor"}
@@ -456,7 +486,7 @@ export function TournamentAdmin({
                 <>
                   <strong>{pesos(detail.prize)}</strong> · {tournamentEntry(detail)} ·{" "}
                   {detail.paymentMode === "wallet"
-                    ? `Campeón: ${pesos(detail.winnerPrize)} (80%) en patacones reales · Comisión: ${pesos(detail.commission)} (20%)`
+                    ? `Campeón: ${pesos(detail.winnerPrize)} (${percentage(10000 - (detail.commissionBps ?? 2000))}) en patacones reales · Comisión: ${pesos(detail.commission)} (${percentage(detail.commissionBps ?? 2000)})`
                     : "Pago manual · 70% campeón / 30% finalista"}
                 </>
               )}
@@ -696,7 +726,8 @@ export function TournamentAdmin({
                       "check-in": "Presencia confirmada",
                       started: "Iniciado",
                       finished: "Finalizado",
-                      prize_credited: "Premio acreditado · 80% campeón / 20% comisión",
+                      prize_credited: "Premio acreditado al campeón",
+                      commission_retained: "Premio destinado a comisión",
                       postponed: "Pospuesto",
                       rescheduled: "Reprogramado",
                       cancelled: "Cancelado",
