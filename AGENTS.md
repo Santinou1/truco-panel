@@ -9,3 +9,4 @@
 - Desarrollo: npm start en 5176, proxy /api a 3002. No detener otros proyectos ni modificar la DB de desarrollo para probar permisos.
 - Antes de entregar: npm test, npm run build y npm run test:browser. Este último inicia Vite 5177/API 3004 y PostgreSQL pulperia_panel_browser_test con correo simulado; exige truco-back instalado y DB disponible. Distinguir OAuth simulado de consentimiento real.
 - Mantener teclado, móvil 320 px, foco visible, estados anunciados y movimiento reducido.
+- El panel de referidos en `/referidos` usa credenciales y cookie propias, sin dar acceso a soporte ni al juego. Invitaciones/revocación/lista premium desde Referidos; contrato completo en `../truco-back/REFERRAL_PORTAL.md`. No persistir enlaces ni contraseñas. Las nuevas mesas ARS cobran 10% fijo; los torneos conservan su comisión configurable.

@@ -20,6 +20,9 @@ export interface TournamentSummary {
   paymentMode: "manual" | "wallet";
   winnerPrize: number;
   commission: number;
+  commissionBps: number;
+  referralCode: string | null;
+  referralAlias: string | null;
   banner: "ancho" | "envido";
   enrolled: number;
   confirmed: number;
@@ -117,3 +120,5 @@ export async function tournamentMutation<T>(
     throw e;
   }
 }
+
+export const percentage = (bps: number) => new Intl.NumberFormat('es-AR', { maximumFractionDigits: 2 }).format(bps / 100) + '%';

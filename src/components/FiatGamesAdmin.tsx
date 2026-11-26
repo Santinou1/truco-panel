@@ -15,7 +15,6 @@ type Terms = {
 type DraftPoints = { win: string; loss: string };
 type Draft = {
   enabled: boolean;
-  commission: string;
   minimum: string;
   fictitious: DraftPoints;
   tiers: (DraftPoints & { from: string })[];
@@ -26,7 +25,6 @@ const asPoints = ({ win, loss }: Points) => ({ win: String(win), loss: String(lo
 function toDraft(value: Terms): Draft {
   return {
     enabled: value.enabled,
-    commission: decimal(value.commissionBps),
     minimum: decimal(value.minEntryMinor),
     fictitious: asPoints(value.scoring.fictitious),
     tiers: value.scoring.tiers.map((tier) => ({ ...asPoints(tier), from: decimal(tier.minEntryMinor) })),
@@ -89,11 +87,7 @@ export function FiatGamesAdmin({ onDenied }: { onDenied: (status: 401 | 403) => 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!terms || !draft || saving.current) return;
-    const commissionBps = scaledAmount(draft.commission);
-    if (!Number.isFinite(commissionBps) || commissionBps > 9999) {
-      setError("Ingresá un porcentaje entre 0 y 99,99.");
-      return;
-    }
+    const commissionBps = 1000;
     const minEntryMinor = scaledAmount(draft.minimum);
     const tiers = draft.tiers.map((tier) => ({
       minEntryMinor: scaledAmount(tier.from), win: Number(tier.win), loss: Number(tier.loss),
@@ -155,8 +149,8 @@ export function FiatGamesAdmin({ onDenied }: { onDenied: (status: 401 | 403) => 
                 </label>
                 <label>
                   Comisión del pozo bruto (%)
-                  <input type="text" inputMode="decimal" maxLength={5} required
-                    value={draft.commission} onChange={(event) => setDraft({ ...draft, commission: event.target.value })} />
+                  <input type="text" readOnly value="10" aria-describedby="fixed-match-commission" />
+                  <small id="fixed-match-commission">Comisión fija del 10%. La lista premium determina su reparto.</small>
                 </label>
               </div>
             </fieldset>
