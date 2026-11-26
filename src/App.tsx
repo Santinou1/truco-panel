@@ -240,7 +240,7 @@ export function App() {
               </button>
             </main>
           ) : !user ? (
-            <Access onSuccess={accept} run={run} busy={busy} google={google} />
+            <><Access onSuccess={accept} run={run} busy={busy} google={google} /><p className="portal-access"><a href="/referidos">Ingresar al panel exclusivo de referidos →</a></p></>
           ) : user.role === "super_admin" ? (
             section === "ranking" ? (
               <DailyRankingAdmin key={user.id} onDenied={denied} />
@@ -253,7 +253,7 @@ export function App() {
             ) : section === "fiat-transfers" ? (
               <FiatTransfersAdmin key={user.id} onDenied={denied} />
             ) : section === "referrals" ? (
-              <ReferralsAdmin key={user.id} onDenied={denied} />
+              <ReferralsAdmin key={user.id} userId={user.id} onDenied={denied} />
             ) : section === "support" ? (
               <SupportAdmin key={user.id} onDenied={denied} />
             ) : section === "tournaments" ? (
@@ -271,6 +271,7 @@ export function App() {
                 <span className="eyebrow">ACCESO RESTRINGIDO</span>
                 <h1>Este panel es privado</h1>
                 <p>Tu cuenta no tiene permisos de superadministrador.</p>
+                <p><a href="/referidos">Ingresar con mis credenciales del panel de referidos →</a></p>
                 <button className="primary" onClick={logout} disabled={busy}>
                   Ingresar con otra cuenta
                 </button>

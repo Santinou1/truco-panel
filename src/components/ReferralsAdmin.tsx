@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { api, ApiError, message } from "../api";
 import { ReferralTracking } from "./ReferralTracking";
+import { ReferralPortalAdmin } from "./ReferralPortalAdmin";
 import "./referrals-admin.css";
 
 type Account = { id: string; displayName: string; email: string; code: string | null };
@@ -9,7 +10,7 @@ type Page<T> = { items: T[]; hasMore: boolean };
 type AvatarOption = {id: string; label: string; unlockMethod: string};
 const limit = 20;
 
-export function ReferralsAdmin({ onDenied }: { onDenied: (status: 401 | 403) => void }) {
+export function ReferralsAdmin({ userId, onDenied }: { userId: string; onDenied: (status: 401 | 403) => void }) {
   const [query, setQuery] = useState("");
   const [accounts, setAccounts] = useState<Page<Account>>();
   const [requestPage, setRequestPage] = useState(0);
@@ -93,6 +94,7 @@ export function ReferralsAdmin({ onDenied }: { onDenied: (status: 401 | 403) => 
       </header>
       {notice && <p className="panel referrals-admin-notice" role="status">{notice}</p>}
       <ReferralTracking revision={trackingRevision} onFailure={failure} />
+      <ReferralPortalAdmin userId={userId} onDenied={onDenied} />
       <section className="panel referrals-admin-panel" aria-labelledby="referral-code-admin">
         <h2 id="referral-code-admin">Asignar un código</h2>
         <p>Buscá una cuenta verificada. El código de cuatro dígitos queda asociado a la cuenta.</p>

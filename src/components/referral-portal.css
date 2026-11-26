@@ -1,0 +1,21 @@
+.referral-portal-shell{min-height:100vh;background:radial-gradient(ellipse at top,#234632,#10241c 75%)}
+.portal-topbar{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:24px;border-bottom:1px solid #c9a55c55;flex-wrap:wrap}
+.portal-topbar>div{display:flex;gap:12px;align-items:center;flex-wrap:wrap;overflow-wrap:anywhere;min-width:0}
+.referral-portal{max-width:1280px;margin:auto;display:grid;gap:24px;min-width:0}
+.referral-portal h1,.referral-portal p,.referral-portal-admin p{overflow-wrap:anywhere}
+.portal-access{max-width:580px;width:100%;margin:32px auto;padding:clamp(16px,4vw,32px)}
+.portal-access fieldset,.referral-portal-admin fieldset{border:0;margin:0;padding:0;min-width:0}
+.portal-access label,.referral-portal-admin label,.portal-filters label{display:grid;gap:8px;margin:12px 0;min-width:0}
+.portal-access input,.referral-portal-admin input:not([type=checkbox]),.referral-portal-admin select,.portal-filters input,.portal-filters select{width:100%;min-width:0;padding:12px;background:#10291e;color:#f7ecd4;border:1px solid #ae956966;border-radius:8px;font:inherit;color-scheme:dark}
+.portal-checkbox{display:flex!important;flex-direction:row;align-items:flex-start;gap:10px}.portal-checkbox input{width:18px;min-height:18px;height:18px;flex:0 0 18px;margin:2px 0 0}
+.portal-heading{display:flex;justify-content:space-between;gap:20px;align-items:center;flex-wrap:wrap}
+.portal-heading h1{margin:8px 0}.portal-totals{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:14px;margin:0}
+.portal-totals>div{padding:20px;background:#173327;border:1px solid #b7975a66;border-radius:12px;min-width:0}
+.portal-totals dt{color:#dfd6bb}.portal-totals dd{margin:12px 0 0;font-size:clamp(24px,3vw,34px);color:#f2cf85;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.portal-counts dd{font-size:24px}.portal-section,.referral-portal-admin,.portal-notice{padding:clamp(16px,3vw,28px);min-width:0}
+.portal-filters{display:flex;gap:12px;align-items:end;flex-wrap:wrap;margin:16px 0}.portal-filters label{flex:1 1 180px;margin:0;max-width:100%}
+.portal-actions{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}.portal-actions button{max-width:100%;overflow-wrap:anywhere}
+.portal-records{list-style:none;padding:0;margin:18px 0}.portal-records>li{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:18px;padding:20px 0;border-top:1px solid #b7975a55;overflow-wrap:anywhere;min-width:0}
+.portal-records>li>div:first-child{display:grid;gap:6px;min-width:0;flex:1 1 240px}.portal-records dl{display:flex;gap:20px;flex-wrap:wrap;margin:0;min-width:0}.portal-records dd{margin:5px 0 0;color:#f2cf85;font-variant-numeric:tabular-nums}
+.portal-explanation{margin:0;line-height:1.6}.referral-portal-admin .tournament-referral-selector{margin-bottom:18px}
+@media(max-width:600px){.portal-topbar{padding:18px 16px}.referral-portal{padding:20px 12px}.portal-topbar>div{width:100%}.portal-access{margin:12px auto}.portal-records dl{width:100%}.portal-totals>div{padding:16px}}

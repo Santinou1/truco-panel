@@ -2,10 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { api, ApiError, message } from "../api";
 
 type Referral = { code: string; alias: string | null; ownerName: string };
-export function TournamentReferralSelector({ value, onChange, onDenied }: {
+export function TournamentReferralSelector({ value, onChange, onDenied, helpText }: {
   value: string | null;
   onChange: (code: string) => void;
   onDenied: (status: 401 | 403) => void;
+  helpText?: string;
 }) {
   const [search, setSearch] = useState("");
   const [query, setQuery] = useState({ search: "", offset: 0, revision: 0 });
@@ -51,6 +52,6 @@ export function TournamentReferralSelector({ value, onChange, onDenied }: {
         <button type="button" disabled={!result.hasMore} onClick={() => setQuery({ ...query, offset: query.offset + 20 })}>Más referidos</button>
       </div>
     </>}
-    <p id="referral-audience-help">Solo podrán verlo e inscribirse el dueño del código y las personas que lo tengan vinculado. Cambiar el alias conserva este destino.</p>
+    <p id="referral-audience-help">{helpText ?? "Solo podrán verlo e inscribirse el dueño del código y las personas que lo tengan vinculado. Cambiar el alias conserva este destino."}</p>
   </section>;
 }

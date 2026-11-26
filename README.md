@@ -101,3 +101,9 @@ En Torneos → Crear torneo, elegir la moneda y el valor de entrada: patacones f
 El premio total se ingresa en pesos: se acredita automáticamente al campeón en patacones reales después de descontar la comisión elegida (20% por defecto). Los torneos históricos conservan el pago manual 70/30; editar un borrador lo actualiza al contrato nuevo. Duplicar conserva entrada y moneda. Las simulaciones con bots requieren entrada y premio cero.
 
 En el borrador, **Destinatarios del torneo → Exclusivo por referido** permite elegir un código o alias existente mediante búsqueda y páginas. Podrán verlo e inscribirse los referidos vinculados y el dueño. **Comisión (%)** admite 0–100 con dos decimales para cualquier torneo; muestra los importes antes de guardar. Duplicar conserva ambos valores. Al publicar se fijan el destino y el porcentaje.
+
+## Accesos de referidos premium
+
+En Referidos → Accesos y códigos premium, seleccionar código o alias, email y si se habilita premium. El destinatario registra credenciales propias desde un enlace de uso único de 24 horas; luego ingresa en /referidos o solicita un enlace de 10 minutos. No accede a soporte. El tablero incluye todos sus usuarios paginados, partidas por tipo, importes y comisiones/saldo. Soporte puede revocar acceso y premium de inmediato. Contrato y pruebas: [REFERRAL_PORTAL.md](../truco-back/REFERRAL_PORTAL.md).
+
+Las nuevas mesas de patacones reales tienen comisión fija del 10%. La comisión de torneos sigue siendo configurable.
