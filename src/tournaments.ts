@@ -26,7 +26,7 @@ export interface TournamentSummary {
   banner: "ancho" | "envido";
   enrolled: number;
   confirmed: number;
-  capacity: 8 | 16;
+  capacity: 8 | 16 | 32;
   botCount: number;
   simulation: boolean;
 }
@@ -66,7 +66,7 @@ export const tournamentStatus: Record<string, string> = {
   finished: "Finalizado",
   cancelled: "Cancelado",
 };
-export const roundName = ["", "Octavos", "Cuartos", "Semifinal", "Final"];
+export const roundName = ["Dieciseisavos", "Octavos", "Cuartos", "Semifinal", "Final"];
 export const pesos = (amount: number) =>
   new Intl.NumberFormat("es-AR", {
     style: "currency",
@@ -78,7 +78,7 @@ export const tournamentEntry = (t: Pick<TournamentSummary, "entryFee" | "entryCu
   !t.entryFee ? "Entrada gratis" : t.entryCurrency === "ARS"
     ? `${pesos(t.entryFee / 100)} en patacones reales`
     : `${t.entryFee.toLocaleString("es-AR")} patacones ficticios`;
-export const tournamentDate = (value: string | null, capacity: 8 | 16 = 16) =>
+export const tournamentDate = (value: string | null, capacity: 8 | 16 | 32 = 16) =>
   value
     ? new Date(value).toLocaleString("es-AR", {
         dateStyle: "medium",
