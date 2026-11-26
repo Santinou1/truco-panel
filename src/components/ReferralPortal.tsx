@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, ApiError, message } from "../api";
 import "./referral-portal.css";
-type Account={id:string;code:string;alias:string|null;email:string;displayName:string;premium:boolean};
+export type PortalAccount={id:string;code:string;alias:string|null;email:string;displayName:string;premium:boolean};
 type Totals={premium:boolean;totalUsers:number;settledMatches:number;activeMatches:number;refundedMatches:number;sameCodeMatches:number;otherCodeMatches:number;normalMatches:number;
  usersStakedMinor:string;grossPlayedMinor:string;usersNetMinor:string;earnedMinor:string;ownerBalanceMinor:string;ownerAvailableMinor:string;ownerReservedMinor:string};
 type Member={userId:string;displayName:string;username:string|null;linkedAt:string;matchesPlayed:number;stakedMinor:string;netMinor:string};
@@ -16,7 +16,7 @@ const date=(iso:string)=>new Date(iso).toLocaleString("es-AR",{dateStyle:"short"
 export function ReferralPortal(){
  const [linkToken,setLinkToken]=useState(()=>new URLSearchParams(location.hash.slice(1)).get("token")??"");
  const [link,setLink]=useState<{purpose:"invite"|"login";email:string;code:string;alias:string|null}>();
- const [account,setAccount]=useState<Account|null>(null),[booting,setBooting]=useState(true),[attempt,setAttempt]=useState(0);
+ const [account,setAccount]=useState<PortalAccount|null>(null),[booting,setBooting]=useState(true),[attempt,setAttempt]=useState(0);
  const [email,setEmail]=useState(""),[password,setPassword]=useState(""),[name,setName]=useState(""),[error,setError]=useState(""),[notice,setNotice]=useState(""),[busy,setBusy]=useState(false);
  const lock=useRef(false);
  useEffect(()=>{
@@ -25,13 +25,13 @@ export function ReferralPortal(){
   let live=true;setBooting(true);setError("");
   void (async()=>{try{
    if(linkToken){const info=await api<typeof link>("/referral-portal/auth/inspect",{token:linkToken});if(live)setLink(info);}
-   else {const me=await api<Account>("/referral-portal/me");if(live)setAccount(me);}
+   else {const me=await api<PortalAccount>("/referral-portal/me");if(live)setAccount(me);}
   }catch(e){if(live&&!(e instanceof ApiError&&e.status===401))setError(message(e));}
   finally{if(live)setBooting(false);}})();return()=>{live=false;};
  },[linkToken,attempt]);
  async function run(work:()=>Promise<void>){if(lock.current)return;lock.current=true;setBusy(true);setError("");setNotice("");
   try{await work();}catch(e){setError(message(e));}finally{lock.current=false;setBusy(false);}}
- const authenticated=async()=>{setAccount(await api<Account>("/referral-portal/me"));setPassword("");setLinkToken("");setLink(undefined);history.replaceState({},"","/referidos");};
+ const authenticated=async()=>{setAccount(await api<PortalAccount>("/referral-portal/me"));setPassword("");setLinkToken("");setLink(undefined);history.replaceState({},"","/referidos");};
  const denied=useCallback(()=>{setAccount(null);setError("El acceso venció o fue revocado. Volvé a ingresar.");},[]);
  return <div className="referral-portal-shell">
   <a href="#portal-main" className="skip-link">Saltar al contenido</a>
@@ -41,7 +41,7 @@ export function ReferralPortal(){
   <main id="portal-main" className="page referral-portal" tabIndex={-1}>
    {error&&<p role="alert" className="error-banner">{error} <button onClick={()=>setAttempt(v=>v+1)}>Reintentar</button></p>}
    {notice&&<p role="status" className="panel portal-notice">{notice}</p>}
-   {booting?<p role="status">Comprobando tu acceso…</p>:account?<Dashboard key={account.id} account={account} onDenied={denied} onRefresh={()=>setAttempt(v=>v+1)}/>:linkToken?
+   {booting?<p role="status">Comprobando tu acceso…</p>:account?<PortalDashboard key={account.id} account={account} onDenied={denied} onRefresh={()=>setAttempt(v=>v+1)}/>:linkToken?
     <section className="panel portal-access"><h1>{link?.purpose==="invite"?"Registrá tu acceso de referido":"Confirmá el ingreso"}</h1>
      {link?<><p>{link.email} · {link.alias??link.code}</p><p>Este acceso queda limitado a tus referidos. Tus credenciales son exclusivas de este panel.</p>
       <form onSubmit={e=>{e.preventDefault();void run(async()=>{await api("/referral-portal/auth/consume",{token:linkToken,...(link.purpose==="invite"?{displayName:name,password}:{})});await authenticated();});}}>
@@ -69,7 +69,7 @@ export function ReferralPortal(){
  </div>;
 }
 
-function Dashboard({account,onDenied,onRefresh}:{account:Account;onDenied:()=>void;onRefresh:()=>void}){
+export function PortalDashboard({account,onDenied,onRefresh,apiBase="/referral-portal"}:{account:PortalAccount;onDenied:()=>void;onRefresh:()=>void;apiBase?:string}){
  const [summary,setSummary]=useState<Totals>(),[users,setUsers]=useState<Page<Member>>(),[matches,setMatches]=useState<Page<Match>>();
  const [userSearch,setUserSearch]=useState(""),[matchSearch,setMatchSearch]=useState("");
  const [uq,setUq]=useState({search:"",offset:0}),[mq,setMq]=useState({search:"",offset:0,kind:"all",status:"all",from:null as string|null,to:null as string|null});
@@ -77,11 +77,11 @@ function Dashboard({account,onDenied,onRefresh}:{account:Account;onDenied:()=>vo
  const [error,setError]=useState("");
  const denied=useRef(onDenied);denied.current=onDenied;
  const fail=useCallback((e:unknown)=>{if(e instanceof ApiError&&(e.status===401||e.status===403))denied.current();else setError(message(e));},[]);
- useEffect(()=>{let live=true;void api<Totals>("/referral-portal/summary").then(r=>{if(live)setSummary(r);}).catch(e=>{if(live)fail(e);});return()=>{live=false;};},[fail]);
- useEffect(()=>{let live=true;setUsers(undefined);void api<Page<Member>>("/referral-portal/users/search",{...uq,limit:20}).then(r=>{if(live)setUsers(r);}).catch(e=>{if(live)fail(e);});return()=>{live=false;};},[uq,fail]);
- useEffect(()=>{let live=true;setMatches(undefined);void api<Page<Match>>("/referral-portal/matches/search",{...mq,limit:20}).then(r=>{if(live)setMatches(r);}).catch(e=>{if(live)fail(e);});return()=>{live=false;};},[mq,fail]);
+ useEffect(()=>{let live=true;void api<Totals>(apiBase+"/summary").then(r=>{if(live)setSummary(r);}).catch(e=>{if(live)fail(e);});return()=>{live=false;};},[apiBase,fail]);
+ useEffect(()=>{let live=true;setUsers(undefined);void api<Page<Member>>(apiBase+"/users/search",{...uq,limit:20}).then(r=>{if(live)setUsers(r);}).catch(e=>{if(live)fail(e);});return()=>{live=false;};},[apiBase,uq,fail]);
+ useEffect(()=>{let live=true;setMatches(undefined);void api<Page<Match>>(apiBase+"/matches/search",{...mq,limit:20}).then(r=>{if(live)setMatches(r);}).catch(e=>{if(live)fail(e);});return()=>{live=false;};},[apiBase,mq,fail]);
  return <>
-  <header className="portal-heading"><div><span className="eyebrow">CÓDIGO {account.code}</span><h1>{account.alias??account.displayName}</h1><p>{(summary?.premium??account.premium)?"Código premium habilitado":"Comisiones premium deshabilitadas para nuevas partidas"}</p></div>
+  <header className="portal-heading"><div><span className="eyebrow">CÓDIGO {account.code}</span><h1>{account.alias??(account.displayName||account.code)}</h1><p>{(summary?.premium??account.premium)?"Código premium habilitado":"Comisiones premium deshabilitadas para nuevas partidas"}</p></div>
    <button onClick={onRefresh}>Actualizar mi panel</button></header>
   {error&&<p role="alert" className="error-banner">{error}</p>}
   {!summary&&!error&&<p role="status">Cargando totales…</p>}
