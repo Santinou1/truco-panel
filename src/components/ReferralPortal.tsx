@@ -41,7 +41,7 @@ export function ReferralPortal(){
   <main id="portal-main" className="page referral-portal" tabIndex={-1}>
    {error&&<p role="alert" className="error-banner">{error} <button onClick={()=>setAttempt(v=>v+1)}>Reintentar</button></p>}
    {notice&&<p role="status" className="panel portal-notice">{notice}</p>}
-   {booting?<p role="status">Comprobando tu acceso…</p>:account?<Dashboard account={account} onDenied={denied}/>:linkToken?
+   {booting?<p role="status">Comprobando tu acceso…</p>:account?<Dashboard key={account.id} account={account} onDenied={denied} onRefresh={()=>setAttempt(v=>v+1)}/>:linkToken?
     <section className="panel portal-access"><h1>{link?.purpose==="invite"?"Registrá tu acceso de referido":"Confirmá el ingreso"}</h1>
      {link?<><p>{link.email} · {link.alias??link.code}</p><p>Este acceso queda limitado a tus referidos. Tus credenciales son exclusivas de este panel.</p>
       <form onSubmit={e=>{e.preventDefault();void run(async()=>{await api("/referral-portal/auth/consume",{token:linkToken,...(link.purpose==="invite"?{displayName:name,password}:{})});await authenticated();});}}>
@@ -69,20 +69,20 @@ export function ReferralPortal(){
  </div>;
 }
 
-function Dashboard({account,onDenied}:{account:Account;onDenied:()=>void}){
+function Dashboard({account,onDenied,onRefresh}:{account:Account;onDenied:()=>void;onRefresh:()=>void}){
  const [summary,setSummary]=useState<Totals>(),[users,setUsers]=useState<Page<Member>>(),[matches,setMatches]=useState<Page<Match>>();
  const [userSearch,setUserSearch]=useState(""),[matchSearch,setMatchSearch]=useState("");
  const [uq,setUq]=useState({search:"",offset:0}),[mq,setMq]=useState({search:"",offset:0,kind:"all",status:"all",from:null as string|null,to:null as string|null});
  const [kind,setKind]=useState("all"),[status,setStatus]=useState("all"),[from,setFrom]=useState(""),[to,setTo]=useState("");
- const [revision,setRevision]=useState(0),[error,setError]=useState("");
+ const [error,setError]=useState("");
  const denied=useRef(onDenied);denied.current=onDenied;
  const fail=useCallback((e:unknown)=>{if(e instanceof ApiError&&(e.status===401||e.status===403))denied.current();else setError(message(e));},[]);
- useEffect(()=>{let live=true;void api<Totals>("/referral-portal/summary").then(r=>{if(live)setSummary(r);}).catch(e=>{if(live)fail(e);});return()=>{live=false;};},[revision,fail]);
- useEffect(()=>{let live=true;setUsers(undefined);void api<Page<Member>>("/referral-portal/users/search",{...uq,limit:20}).then(r=>{if(live)setUsers(r);}).catch(e=>{if(live)fail(e);});return()=>{live=false;};},[uq,revision,fail]);
- useEffect(()=>{let live=true;setMatches(undefined);void api<Page<Match>>("/referral-portal/matches/search",{...mq,limit:20}).then(r=>{if(live)setMatches(r);}).catch(e=>{if(live)fail(e);});return()=>{live=false;};},[mq,revision,fail]);
+ useEffect(()=>{let live=true;void api<Totals>("/referral-portal/summary").then(r=>{if(live)setSummary(r);}).catch(e=>{if(live)fail(e);});return()=>{live=false;};},[fail]);
+ useEffect(()=>{let live=true;setUsers(undefined);void api<Page<Member>>("/referral-portal/users/search",{...uq,limit:20}).then(r=>{if(live)setUsers(r);}).catch(e=>{if(live)fail(e);});return()=>{live=false;};},[uq,fail]);
+ useEffect(()=>{let live=true;setMatches(undefined);void api<Page<Match>>("/referral-portal/matches/search",{...mq,limit:20}).then(r=>{if(live)setMatches(r);}).catch(e=>{if(live)fail(e);});return()=>{live=false;};},[mq,fail]);
  return <>
   <header className="portal-heading"><div><span className="eyebrow">CÓDIGO {account.code}</span><h1>{account.alias??account.displayName}</h1><p>{(summary?.premium??account.premium)?"Código premium habilitado":"Comisiones premium deshabilitadas para nuevas partidas"}</p></div>
-   <button onClick={()=>{setError("");setRevision(v=>v+1);}}>Actualizar mi panel</button></header>
+   <button onClick={onRefresh}>Actualizar mi panel</button></header>
   {error&&<p role="alert" className="error-banner">{error}</p>}
   {!summary&&!error&&<p role="status">Cargando totales…</p>}
   {summary&&<><dl className="portal-totals">
