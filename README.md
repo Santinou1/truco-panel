@@ -104,6 +104,8 @@ En el borrador, **Destinatarios del torneo → Exclusivo por referido** permite 
 
 ## Accesos de referidos premium
 
+Cada acceso tiene **Ir al panel**: abre su tablero en otra pestaña con la sesión de `soporte@lapulperia.cloud`. La vista de superadministrador permite consultar usuarios, partidas, filtros, páginas, comisiones y saldo, incluso si el acceso está pendiente o revocado. Cada consulta valida los permisos vigentes. No hace falta la contraseña del referido y la consulta no modifica su sesión, credenciales ni premium. **Volver a la administración** regresa al panel principal.
+
 En Referidos → Accesos y códigos premium, seleccionar código o alias, email y si se habilita premium. El destinatario registra credenciales propias desde un enlace de uso único de 24 horas; luego ingresa en /referidos o solicita un enlace de 10 minutos. No accede a soporte. El tablero incluye todos sus usuarios paginados, partidas por tipo, importes y comisiones/saldo. Soporte puede revocar acceso y premium de inmediato. Contrato y pruebas: [REFERRAL_PORTAL.md](../truco-back/REFERRAL_PORTAL.md).
 
 Las nuevas mesas de patacones reales tienen comisión fija del 10%. La comisión de torneos sigue siendo configurable.
