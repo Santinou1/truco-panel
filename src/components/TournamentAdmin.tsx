@@ -15,7 +15,7 @@ import {
 import "./tournament-admin.css";
 import { TournamentReferralSelector } from "./TournamentReferralSelector";
 type Config = {
-  capacity: 8 | 16;
+  capacity: 8 | 16 | 32;
   botCount: number;
   name: string;
   description: string;
@@ -124,13 +124,14 @@ function Editor({
               onChange={(e) =>
                 set({
                   ...c,
-                  capacity: Number(e.target.value) as 8 | 16,
+                  capacity: Number(e.target.value) as Config["capacity"],
                   botCount: Math.min(c.botCount, Number(e.target.value)),
                 })
               }
             >
               <option value={8}>8 jugadores</option>
               <option value={16}>16 jugadores</option>
+              <option value={32}>32 jugadores</option>
             </select>
           </label>
           <label>
