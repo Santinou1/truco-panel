@@ -44,6 +44,7 @@ export function ReferralPortalAdmin({userId,onDenied}:{userId:string;onDenied:(s
     <span>{a.revokedAt?"Acceso revocado":a.activatedAt?"Acceso registrado":"Registro pendiente"} · {a.premium?"Premium habilitado":"Sin comisión premium"}</span>
     <small>Último correo: {delivery[a.emailStatus??""]??a.emailStatus??"Sin envío"}</small></div>
    <div className="portal-actions">
+    <a className="portal-panel-link" href={`/referidos/admin/${a.id}`} target="_blank" rel="noreferrer" aria-label={`Ir al panel de ${a.alias??a.code} (nueva pestaña)`}>Ir al panel</a>
     <button disabled={busy} onClick={()=>void mutate("/admin/referral-portal/invite",{code:a.code,email:a.email,premium:a.premium},"Nuevo enlace solicitado. El anterior queda invalidado.")}>{a.revokedAt?"Reinvitar":a.activatedAt?"Enviar enlace de ingreso":"Reenviar invitación"}</button>
     {!a.revokedAt&&<><button disabled={busy} onClick={()=>void mutate(`/admin/referral-portal/accounts/${a.id}/manage`,{enabled:!a.premium,expectedVersion:a.version,revoke:false},"Lista premium actualizada para las próximas partidas.")}>{a.premium?"Desactivar premium":"Habilitar premium"}</button>
     <button disabled={busy} onClick={()=>void mutate(`/admin/referral-portal/accounts/${a.id}/manage`,{enabled:false,expectedVersion:a.version,revoke:true},"Acceso y premium desactivados. Las sesiones y enlaces fueron revocados.")}>Revocar acceso y premium</button></>}
