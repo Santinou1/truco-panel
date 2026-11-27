@@ -253,9 +253,10 @@ function Editor({
           Retirarse antes del inicio o cancelar el torneo devuelve la entrada. Si se pospone, se conserva la inscripción y el cobro.</p>
         {c.startMode === "scheduled" && (
           <p>
-            Si no confirman presencia los {c.capacity} jugadores a la hora
-            prevista, queda pospuesto: se liberan las mesas y se conservan las
-            inscripciones. Podés reprogramarlo o cancelarlo desde acá.
+            Con {c.capacity} inscriptos arranca a la hora prevista, sin exigir
+            confirmación de presencia. La ausencia de un jugador durante 60
+            segundos da el pase a su rival; si faltan ambos, se sortea quién
+            avanza. Solo se pospone si faltan inscriptos.
           </p>
         )}
         <div className="tournament-actions">
@@ -553,7 +554,7 @@ export function TournamentAdmin({
                   void mutate(
                     `/admin/tournaments/${detail.id}/reschedule`,
                     { startsAt: new Date(date).toISOString() },
-                    "Nuevo horario publicado. Los jugadores deben volver a confirmar.",
+                    "Nuevo horario publicado. La confirmación de presencia es opcional.",
                   );
                 }}
               >
@@ -730,6 +731,8 @@ export function TournamentAdmin({
                       prize_credited: "Premio acreditado al campeón",
                       commission_retained: "Premio destinado a comisión",
                       postponed: "Pospuesto",
+                      double_absence_draw: "Pase sorteado por doble ausencia",
+                      table_unavailable_forfeit: "Pase por falta de mesa disponible",
                       rescheduled: "Reprogramado",
                       cancelled: "Cancelado",
                       resolved: "Cruce resuelto",
