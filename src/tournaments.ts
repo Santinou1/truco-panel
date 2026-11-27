@@ -5,6 +5,8 @@ export interface TournamentSummary {
   description: string;
   startMode: "scheduled" | "when_full";
   startsAt: string | null;
+  registrationOpensAt: string | null;
+  registrationOpen: boolean;
   status:
     | "draft"
     | "registration"
@@ -66,6 +68,10 @@ export const tournamentStatus: Record<string, string> = {
   finished: "Finalizado",
   cancelled: "Cancelado",
 };
+export const tournamentStatusLabel = (t: Pick<TournamentSummary, "status" | "registrationOpen">) =>
+  t.status === "registration" && t.registrationOpen === false
+    ? "Inscripciones cerradas"
+    : tournamentStatus[t.status];
 export const roundName = ["Dieciseisavos", "Octavos", "Cuartos", "Semifinal", "Final"];
 export const pesos = (amount: number) =>
   new Intl.NumberFormat("es-AR", {

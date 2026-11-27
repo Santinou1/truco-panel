@@ -111,3 +111,5 @@ Cada acceso tiene **Ir al panel**: abre su tablero en otra pestaña con la sesi�
 En Referidos → Accesos y códigos premium, seleccionar código o alias, email y si se habilita premium. El destinatario registra credenciales propias desde un enlace de uso único de 24 horas; luego ingresa en /referidos o solicita un enlace de 10 minutos. No accede a soporte. El tablero incluye todos sus usuarios paginados, partidas por tipo, importes y comisiones/saldo. Soporte puede revocar acceso y premium de inmediato. Contrato y pruebas: [REFERRAL_PORTAL.md](../truco-back/REFERRAL_PORTAL.md).
 
 Las nuevas mesas de patacones reales tienen comisión fija del 10%. La comisión de torneos sigue siendo configurable.
+
+Los torneos admiten una apertura de inscripciones independiente del inicio (`registrationOpensAt`). En el panel se configura en hora local; vacío abre al publicar. Los publicados se anuncian antes de abrir, mostrando ambas fechas, para patacones ficticios y reales. La API bloquea las inscripciones anticipadas sin cobrar ni reservar mesa.

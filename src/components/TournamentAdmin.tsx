@@ -9,7 +9,7 @@ import {
   roundName,
   tournamentDate,
   tournamentMutation,
-  tournamentStatus,
+  tournamentStatusLabel,
   pendingTournamentIntent,
 } from "../tournaments";
 import "./tournament-admin.css";
@@ -21,6 +21,7 @@ type Config = {
   description: string;
   startMode: "scheduled" | "when_full";
   startsAt: string | null;
+  registrationOpensAt: string | null;
   target: 15 | 30;
   flor: boolean;
   prize: number;
@@ -37,6 +38,7 @@ const blank: Config = {
   description: "",
   startMode: "when_full",
   startsAt: null,
+  registrationOpensAt: null,
   target: 30,
   flor: false,
   prize: 30000,
@@ -68,6 +70,8 @@ function Editor({
 }) {
   const [c, set] = useState(initial);
   const [date, setDate] = useState(localTime(c.startsAt));
+  const [opening, setOpening] = useState(localTime(c.registrationOpensAt));
+  const [scheduleError, setScheduleError] = useState("");
   const [exclusive, setExclusive] = useState(c.referralCode !== null);
   const commission = Math.round(c.prize * c.commissionBps / 100) / 100;
   return (
@@ -75,8 +79,14 @@ function Editor({
       className="panel tournament-editor"
       onSubmit={(e) => {
         e.preventDefault();
+        if (opening && c.startMode === "scheduled" && new Date(opening).getTime() >= new Date(date).getTime()) {
+          setScheduleError("La apertura de inscripciones debe ser anterior al inicio del torneo.");
+          return;
+        }
+        setScheduleError("");
         onSave({
           ...c,
+          registrationOpensAt: opening ? new Date(opening).toISOString() : null,
           startsAt:
             c.startMode === "scheduled" ? new Date(date).toISOString() : null,
         });
@@ -174,6 +184,15 @@ function Editor({
             </label>
           )}
           <label>
+            Apertura de inscripciones (hora local)
+            <input
+              type="datetime-local"
+              value={opening}
+              aria-describedby="registration-opening-help"
+              onChange={(e) => { setOpening(e.target.value); setScheduleError(""); }}
+            />
+          </label>
+          <label>
             Moneda de entrada
             <select value={c.entryCurrency} disabled={c.botCount > 0}
               onChange={(e) => set({ ...c, entryCurrency: e.target.value as Config["entryCurrency"], entryFee: 0 })}>
@@ -236,6 +255,11 @@ function Editor({
             </select>
           </label>
         </div>
+        <p id="registration-opening-help">
+          Dejá vacío para abrir al publicar. El torneo se verá en el juego desde que lo publiques,
+          con su horario de inicio, aunque las inscripciones abran más tarde.
+        </p>
+        {scheduleError && <p role="alert">{scheduleError}</p>}
         {exclusive && <TournamentReferralSelector value={c.referralCode} onChange={referralCode => set({ ...c, referralCode })} onDenied={onDenied} />}
         <p id="bot-help">
           {c.botCount > 0
@@ -368,6 +392,7 @@ export function TournamentAdmin({
     description: d.description,
     startMode: d.startMode,
     startsAt: d.startsAt,
+    registrationOpensAt: d.registrationOpensAt,
     target: d.target,
     flor: d.flor,
     prize: d.prize,
@@ -456,9 +481,10 @@ export function TournamentAdmin({
                 >
                   <strong>{t.name}</strong>
                   <span>
-                    {tournamentStatus[t.status]} · {t.enrolled}/{t.capacity}
+                    {tournamentStatusLabel(t)} · {t.enrolled}/{t.capacity}
                   </span>
                   <small>{tournamentDate(t.startsAt, t.capacity)}</small>
+                  {t.registrationOpensAt && <small>Inscripciones desde {tournamentDate(t.registrationOpensAt)}</small>}
                   <span>
                     {t.simulation
                       ? `Simulación · ${t.botCount} bots`
@@ -473,9 +499,12 @@ export function TournamentAdmin({
         </section>
         {detail ? (
           <section className="panel tournament-management">
-            <span className="eyebrow">{tournamentStatus[detail.status]}</span>
+            <span className="eyebrow">{tournamentStatusLabel(detail)}</span>
             <h2>{detail.name}</h2>
             <p>{detail.description}</p>
+            <p>{detail.registrationOpensAt
+              ? `Apertura de inscripciones: ${tournamentDate(detail.registrationOpensAt)}`
+              : "Apertura de inscripciones: al publicar"}</p>
             <p>{detail.referralCode ? `Exclusivo por referido: ${detail.referralAlias ? `${detail.referralAlias} · ` : ""}${detail.referralCode} · Referidos y dueño del código` : "Abierto a todos los jugadores"}</p>
             <p>
               {tournamentDate(detail.startsAt, detail.capacity)} ·{" "}
@@ -507,14 +536,16 @@ export function TournamentAdmin({
                 disabled={busy}
                 onClick={() => {
                   const c = config(detail);
+                  const startsAt = c.startMode === "scheduled"
+                    ? new Date(Date.now() + 86400000).toISOString() : null;
                   setEditor({
                     config: {
                       ...c,
                       name: c.name.slice(0, 70) + " (copia)",
-                      startsAt:
-                        c.startMode === "scheduled"
-                          ? new Date(Date.now() + 86400000).toISOString()
-                          : null,
+                      startsAt,
+                      registrationOpensAt: startsAt && c.startsAt && c.registrationOpensAt
+                        ? new Date(Date.parse(startsAt) - (Date.parse(c.startsAt) - Date.parse(c.registrationOpensAt))).toISOString()
+                        : c.registrationOpensAt,
                     },
                   });
                 }}
